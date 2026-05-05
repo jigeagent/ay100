@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ay100 · AI能力段位测试</title>
+<style>
+:root {
+  --bg: #f5f5f5;
+  --card: #ffffff;
+  --text: #1a1a1a;
+  --text-secondary: #666666;
+  --border: #e8e8e8;
+  --primary: #4f46e5;
+  --primary-light: #eef2ff;
+  --option-hover: #f0f0ff;
+  --radius: 12px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* ── 欢迎页 ── */
+.page { display: none; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+.page.active { display: flex; }
+
+#welcome-page {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px;
+}
+#welcome-page .logo { font-size: 48px; margin-bottom: 16px; }
+#welcome-page h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; letter-spacing: 1px; }
+#welcome-page .subtitle { color: var(--text-secondary); font-size: 15px; margin-bottom: 40px; }
+#welcome-page .desc { color: var(--text-secondary); font-size: 14px; max-width: 320px; margin-bottom: 48px; line-height: 1.8; }
+
+.btn-primary {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--primary); color: #fff; border: none; border-radius: 24px;
+  padding: 14px 48px; font-size: 16px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s; width: 100%; max-width: 280px;
+}
+.btn-primary:active { transform: scale(0.97); opacity: 0.9; }
+
+/* ── 答题页 ── */
+#quiz-page {
+  padding: 0 20px;
+}
+.quiz-header {
+  position: sticky; top: 0; background: var(--bg); z-index: 10;
+  padding: 16px 0 12px;
+}
+.progress-info {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;
+}
+.progress-bar {
+  height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: var(--primary); border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.quiz-body {
+  flex: 1; display: flex; flex-direction: column; justify-content: center;
+  padding: 24px 0 60px;
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+.question-number { font-size: 13px; color: var(--primary); font-weight: 600; margin-bottom: 8px; }
+.question-text { font-size: 20px; font-weight: 700; line-height: 1.5; margin-bottom: 32px; }
+
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-btn {
+  display: block; width: 100%; text-align: left;
+  background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius);
+  padding: 16px 18px; font-size: 15px; line-height: 1.6; cursor: pointer;
+  transition: all 0.15s; color: var(--text);
+}
+.option-btn:active { border-color: var(--primary); background: var(--primary-light); transform: scale(0.985); }
+.option-label { font-weight: 600; margin-right: 6px; color: var(--primary); }
+
+/* ── 结果页 ── */
+#result-page {
+  align-items: center;
+  padding: 32px 20px 48px;
+  text-align: center;
+}
+.result-card {
+  background: var(--card); border-radius: 16px; padding: 32px 24px;
+  box-shadow: var(--shadow); max-width: 400px; width: 100%; margin-bottom: 24px;
+}
+.result-rank { font-size: 48px; margin-bottom: 8px; }
+.result-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.result-score { font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; }
+.result-desc { font-size: 15px; color: var(--text); margin-bottom: 12px; line-height: 1.7; }
+.result-advice { font-size: 13px; color: var(--text-secondary); background: var(--bg); border-radius: 8px; padding: 12px 16px; text-align: left; line-height: 1.7; }
+
+#rank-canvas { display: none; }
+
+.result-actions {
+  display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 340px;
+}
+.result-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; border: none; border-radius: 24px; padding: 14px 24px;
+  font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+}
+.result-btn:active { transform: scale(0.97); }
+.result-btn.save { background: var(--primary); color: #fff; }
+.result-btn.share { background: var(--card); color: var(--text); border: 1.5px solid var(--border); }
+.result-btn.starfilm { background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; }
+
+.share-toast {
+  position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.8); color: #fff; padding: 10px 24px; border-radius: 20px;
+  font-size: 14px; z-index: 99; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+}
+.share-toast.show { opacity: 1; }
+
+/* ── canvas 段位卡渲染样式（仅用于 canvas drawText 参考） ── */
+</style>
+</head>
+<body>
+
+<!-- 欢迎页 -->
+<div id="welcome-page" class="page active">
+  <div class="logo">🎯</div>
+  <h1>Ay100</h1>
+  <p class="subtitle">AI 能力段位测试</p>
+  <p class="desc">6 道题，测出你的 AI 真实段位<br>豆包都收费了，你是什么段位？</p>
+  <button class="btn-primary" onclick="startQuiz()">开始测试</button>
+</div>
+
+<!-- 答题页 -->
+<div id="quiz-page" class="page">
+  <div class="quiz-header">
+    <div class="progress-info">
+      <span id="progress-label">第1题 / 共6题</span>
+      <span id="progress-pct">16%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+  <div class="quiz-body" id="quiz-body"></div>
+</div>
+
+<!-- 结果页 -->
+<div id="result-page" class="page">
+  <div class="result-card">
+    <div class="result-rank" id="result-rank"></div>
+    <div class="result-title" id="result-title"></div>
+    <div class="result-score" id="result-score"></div>
+    <div class="result-desc" id="result-desc"></div>
+    <div class="result-advice" id="result-advice"></div>
+  </div>
+  <canvas id="rank-canvas" width="800" height="1200"></canvas>
+  <div class="result-actions">
+    <button class="result-btn save" onclick="saveImage()">📤 保存图片</button>
+    <button class="result-btn share" onclick="shareLink()">🔗 分享给朋友测测</button>
+    <button class="result-btn starfilm" onclick="starfilm()">🚀 推荐到Starfilm星光计划</button>
+  </div>
+</div>
+
+<div class="share-toast" id="toast">已复制到剪贴板</div>
+
+<script>
+// ── 题目数据 ──
+const questions = [
+  {
+    q: "你让AI写一篇公众号推文，你的第一步是？",
+    options: [
+      { label: "A", text: "打开对话框说"帮我写一篇推文"", score: 1 },
+      { label: "B", text: "在网上找个Prompt模板粘贴进去", score: 2 },
+      { label: "C", text: "自己写好主题、风格、字数、目标受众，再发给AI", score: 3 },
+      { label: "D", text: "先写大纲框架+关键数据，让AI填充，然后我逐段审核", score: 4 }
+    ]
+  },
+  {
+    q: "AI给你的初稿，你通常怎么做？",
+    options: [
+      { label: "A", text: "它给啥我用啥，看着还行", score: 1 },
+      { label: "B", text: "微调几个词就发了", score: 2 },
+      { label: "C", text: "重写40%以上，只保留AI的框架", score: 3 },
+      { label: "D", text: "我只看AI的结果是否符合我设定的约束条件，不符合就改约束重新跑", score: 4 }
+    ]
+  },
+  {
+    q: "遇到AI胡编乱造（幻觉），你会？",
+    options: [
+      { label: "A", text: "换一个AI再问一次", score: 1 },
+      { label: "B", text: "重新发一次同样的问题碰运气", score: 2 },
+      { label: "C", text: "把问题拆小，分步问，加参考材料", score: 3 },
+      { label: "D", text: "分析AI在哪个约束点上跑偏了（目标不清/边界没设/参考不够），修复约束再跑", score: 4 }
+    ]
+  },
+  {
+    q: "你在用AI这件事上，每月的投入产出比如何？",
+    options: [
+      { label: "A", text: "没用过AI，0投入0产出", score: 1 },
+      { label: "B", text: "偶尔用免费工具，基本没花钱", score: 2 },
+      { label: "C", text: "开了会员，感觉省了不少时间", score: 3 },
+      { label: "D", text: "有策略地用AI——简单任务用便宜的，复杂任务用好模型，产出远超投入", score: 4 }
+    ]
+  },
+  {
+    q: "同一个任务你更喜欢哪种方式？",
+    options: [
+      { label: "A", text: "找一个最厉害的大模型一次性搞定", score: 1 },
+      { label: "B", text: "让AI先出个框架我自己改", score: 2 },
+      { label: "C", text: "拆成多个小任务分给不同AI，最后合并", score: 3 },
+      { label: "D", text: "搭建自动化管道：小模型做预处理→中等模型做初稿→大模型做终审→自动发布", score: 4 }
+    ]
+  },
+  {
+    q: '如果有人跟你说"用AI能省钱"，你第一反应是？',
+    options: [
+      { label: "A", text: "AI要花钱的，怎么可能省钱", score: 1 },
+      { label: "B", text: "试试看，能不能省不知道", score: 2 },
+      { label: "C", text: "确实，熟练了能省时间省人工", score: 3 },
+      { label: "D", text: "省钱的核心不是省token，是省返工。约束越精准，返工越少，越省钱", score: 4 }
+    ]
+  }
+];
+
+const bonusQuestions = [
+  {
+    q: '你的Prompt库里，有多少个"负约束模板"？',
+    options: [
+      { label: "A", text: "0个", score: 1 },
+      { label: "B", text: "1-3个", score: 2 },
+      { label: "C", text: "3-10个", score: 3 },
+      { label: "D", text: "不是模板，是一套方法论", score: 4 }
+    ]
+  },
+  {
+    q: "你用过模型路由吗？",
+    options: [
+      { label: "A", text: "没听说过", score: 1 },
+      { label: "B", text: "知道但没用过", score: 2 },
+      { label: "C", text: "手动切换", score: 3 },
+      { label: "D", text: "自动化路由", score: 4 }
+    ]
+  },
+  {
+    q: "你的AI工作流，其他人能直接复用吗？",
+    options: [
+      { label: "A", text: "只有我自己知道", score: 1 },
+      { label: "B", text: "能教但需要带", score: 2 },
+      { label: "C", text: "写了SOP分享", score: 3 },
+      { label: "D", text: "封装成模板/配置包一键部署", score: 4 }
+    ]
+  },
+  {
+    q: "AI给的东西，你怎么验证？",
+    options: [
+      { label: "A", text: "看着大概合理就行", score: 1 },
+      { label: "B", text: "找另一个AI交叉验证", score: 2 },
+      { label: "C", text: "有固定验证清单", score: 3 },
+      { label: "D", text: "把验证规则写进约束里让AI自己先验", score: 4 }
+    ]
+  }
+];
+
+// ── 段位定义 ──
+const ranks = {
+  bronze:  { emoji: "🥉", name: "青铜 · AI局外人", color: "#8B8B8B", bgGrad: ["#e0e0e0","#bdbdbd"], desc: "AI 对你来说还是个新鲜词，但没关系，每个人都是从零开始的。", advice: "💡 建议：从日常小任务开始，试着让 AI 帮你写邮件、列清单、查资料，感受一下 AI 的便利。" },
+  silver:  { emoji: "🥈", name: "白银 · AI尝鲜者", color: "#78909C", bgGrad: ["#e8edf0","#cfd8dc"], desc: "你已经开始尝试 AI 了，但还在摸索阶段。偶尔会用，但还没形成稳定的使用习惯。", advice: "💡 建议：试试给 AI 更明确的指令——告诉它你的目标、风格、字数要求，你会发现效果大不同。" },
+  gold:    { emoji: "🥇", name: "黄金 · AI效率党", color: "#E8A838", bgGrad: ["#FFF8E1","#FFECB3"], desc: "你已经是 AI 的熟练玩家了！知道怎么用好 AI 提升效率，偶尔也会给 AI 设定约束条件。", advice: "💡 建议：进阶方向——学习负约束（告诉 AI 不要做什么）、搭建多步工作流、尝试模型路由。" },
+  platinum_jr: { emoji: "💎", name: "铂金初级", color: "#42A5F5", bgGrad: ["#E3F2FD","#BBDEFB"], desc: "你不仅会用 AI，还开始思考怎么系统化地用。负约束、模型路由，你都有概念了。", advice: "💡 建议：把你的方法论沉淀下来，写成 SOP 或者模板，让团队也能复用。" },
+  platinum_mid:{ emoji: "💎", name: "铂金中级", color: "#1E88E5", bgGrad: ["#E3F2FD","#90CAF9"], desc: "你已经有一套自己的 AI 使用体系了，知道什么时候用什么模型，怎么设定边界。", advice: "💡 建议：尝试自动化——用 API 把工作流串起来，减少人工干预。" },
+  platinum_sr: { emoji: "💎", name: "铂金高级", color: "#1565C0", bgGrad: ["#E3F2FD","#64B5F6"], desc: "你的 AI 能力已经超越了绝大多数人。你有系统、有方法论、有 SOP。", advice: "💡 建议：考虑把验证规则嵌入工作流本身，让 AI 自己先验，进一步减少返工。" },
+  diamond: { emoji: "👑", name: "钻石 · AI共生者", color: "#9C27B0", bgGrad: ["#F3E5F5","#E1BEE7"], desc: "你已经站在 AI 使用的金字塔尖。AI 不是工具，而是你的思维伙伴。约束精准、自动验证、全链路自动化。", advice: "🎯 你已经是顶级玩家，下一步可能是：开源分享、带团队、构建 AI 原生产品。" }
+};
+
+// ── 状态 ──
+let currentQ = 0;
+let totalScore = 0;
+let bonusScore = 0;
+let isBonus = false;
+let currentQuestions = questions;
+
+function getActiveQuestions() {
+  return isBonus ? bonusQuestions : questions;
+}
+
+// ── 页面切换 ──
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── 开始测试 ──
+function startQuiz() {
+  currentQ = 0;
+  totalScore = 0;
+  bonusScore = 0;
+  isBonus = false;
+  currentQuestions = questions;
+  showPage('quiz-page');
+  renderQuestion();
+}
+
+// ── 渲染题目 ──
+function renderQuestion() {
+  const qs = getActiveQuestions();
+  const q = qs[currentQ];
+  const total = isBonus ? questions.length + bonusQuestions.length : questions.length;
+  const idx = isBonus ? questions.length + currentQ + 1 : currentQ + 1;
+  const pct = Math.round((idx / total) * 100);
+
+  document.getElementById('progress-label').textContent = `第${idx}题 / 共${total}题`;
+  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('progress-fill').style.width = pct + '%';
+
+  const container = document.getElementById('quiz-body');
+  container.style.opacity = '0';
+  container.style.transform = 'translateY(12px)';
+  setTimeout(() => { container.style.opacity = '1'; container.style.transform = 'none'; }, 50);
+  let html = '';
+  html += `<div class="question-number">QUESTION ${idx}</div>`;
+  html += `<div class="question-text">${q.q}</div>`;
+  html += `<div class="options">`;
+  q.options.forEach((opt, i) => {
+    html += `<button class="option-btn" onclick="selectOption(${i})"><span class="option-label">${opt.label}.</span> ${opt.text}</button>`;
+  });
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+// ── 选择选项 ──
+function selectOption(idx) {
+  const qs = getActiveQuestions();
+  const q = qs[currentQ];
+  const score = q.options[idx].score;
+
+  if (isBonus) {
+    bonusScore += score;
+  } else {
+    totalScore += score;
+  }
+
+  currentQ++;
+
+  if (isBonus && currentQ >= bonusQuestions.length) {
+    showResult();
+    return;
+  }
+
+  if (!isBonus && currentQ >= questions.length) {
+    // 判断是否进入追加题
+    if (totalScore >= 19) {
+      isBonus = true;
+      currentQ = 0;
+      currentQuestions = bonusQuestions;
+      renderQuestion();
+    } else {
+      showResult();
+    }
+    return;
+  }
+
+  renderQuestion();
+}
+
+// ── 获取段位 ──
+function getRank() {
+  if (isBonus) {
+    if (bonusScore >= 13) return ranks.diamond;
+    if (bonusScore >= 10) return ranks.platinum_sr;
+    if (bonusScore >= 7) return ranks.platinum_mid;
+    return ranks.platinum_jr;
+  }
+  if (totalScore >= 13) return ranks.gold;
+  if (totalScore >= 7) return ranks.silver;
+  return ranks.bronze;
+}
+
+// ── 显示结果 ──
+function showResult() {
+  const rank = getRank();
+  const finalScore = isBonus ? totalScore + bonusScore : totalScore;
+
+  document.getElementById('result-rank').textContent = rank.emoji;
+  document.getElementById('result-title').textContent = rank.name;
+  document.getElementById('result-title').style.color = rank.color;
+  document.getElementById('result-score').textContent = `总分 ${finalScore} 分`;
+  document.getElementById('result-desc').textContent = rank.desc;
+  document.getElementById('result-advice').textContent = rank.advice;
+
+  showPage('result-page');
+  drawRankCard(rank, finalScore);
+}
+
+// ── Canvas 段位卡 ──
+function drawRankCard(rank, finalScore) {
+  const canvas = document.getElementById('rank-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = 800, H = 1200;
+  canvas.width = W;
+  canvas.height = H;
+
+  // 背景渐变
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, rank.bgGrad[0]);
+  grad.addColorStop(1, rank.bgGrad[1]);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // 顶部装饰线
+  ctx.fillStyle = rank.color;
+  ctx.fillRect(0, 0, W, 8);
+
+  // Ay100 Logo
+  ctx.fillStyle = '#1a1a1a';
+  ctx.font = 'bold 36px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Ay100', W / 2, 80);
+
+  ctx.fillStyle = '#666';
+  ctx.font = '24px -apple-system, sans-serif';
+  ctx.fillText('AI 能力段位测试', W / 2, 120);
+
+  // 段位图标
+  ctx.font = '120px serif';
+  ctx.fillText(rank.emoji, W / 2, 280);
+
+  // 段位名称
+  ctx.fillStyle = rank.color;
+  ctx.font = 'bold 48px -apple-system, sans-serif';
+  ctx.fillText(rank.name, W / 2, 360);
+
+  // 分数
+  ctx.fillStyle = '#666';
+  ctx.font = '28px -apple-system, sans-serif';
+  ctx.fillText(`总分 ${finalScore} 分`, W / 2, 420);
+
+  // 分隔线
+  ctx.strokeStyle = '#ddd';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(100, 460);
+  ctx.lineTo(700, 460);
+  ctx.stroke();
+
+  // 定位描述
+  ctx.fillStyle = '#333';
+  ctx.font = '26px -apple-system, sans-serif';
+  const descLines = wrapText(ctx, rank.desc, 600);
+  let y = 510;
+  descLines.forEach(line => {
+    ctx.fillText(line, W / 2, y);
+    y += 38;
+  });
+
+  // 升段建议
+  ctx.fillStyle = '#555';
+  ctx.font = '22px -apple-system, sans-serif';
+  const adviceLines = wrapText(ctx, rank.advice, 600);
+  y += 20;
+  adviceLines.forEach(line => {
+    ctx.fillText(line, W / 2, y);
+    y += 34;
+  });
+
+  // 底部标语
+  ctx.fillStyle = rank.color;
+  ctx.font = 'bold 28px -apple-system, sans-serif';
+  y = H - 160;
+  ctx.fillText('豆包都收费了，你是什么段位？', W / 2, y);
+
+  // 二维码占位 / 底部装饰
+  ctx.fillStyle = '#999';
+  ctx.font = '20px -apple-system, sans-serif';
+  ctx.fillText('扫码测试你的AI段位', W / 2, H - 80);
+
+  // 边框
+  ctx.strokeStyle = rank.color;
+  ctx.lineWidth = 4;
+  ctx.strokeRect(20, 20, W - 40, H - 40);
+
+  ctx.strokeStyle = rank.color;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(30, 30, W - 60, H - 60);
+}
+
+function wrapText(ctx, text, maxWidth) {
+  const chars = text.split('');
+  const lines = [];
+  let current = '';
+  chars.forEach(ch => {
+    const test = current + ch;
+    if (ctx.measureText(test).width > maxWidth && current) {
+      lines.push(current);
+      current = ch;
+    } else {
+      current = test;
+    }
+  });
+  if (current) lines.push(current);
+  return lines;
+}
+
+// ── 保存图片 ──
+function saveImage() {
+  const canvas = document.getElementById('rank-canvas');
+  const link = document.createElement('a');
+  link.download = `Ay100_段位卡_${Date.now()}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+// ── 分享链接 ──
+function shareLink() {
+  const url = window.location.href;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => showToast('链接已复制到剪贴板，快去分享吧！'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('链接已复制到剪贴板，快去分享吧！');
+  }
+}
+
+// ── Starfilm ──
+function starfilm() {
+  // 预留 href 占位
+  const rank = getRank();
+  const ref = isBonus && bonusScore >= 10 ? 'ay100_diamond' : 'ay100_platinum';
+  const url = `https://starfilm.hengxingai.com/starlight?ref=${ref}&rank=${encodeURIComponent(rank.name)}`;
+  window.open(url, '_blank');
+}
+
+// ── Toast ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+</script>
+</body>
+</html>
