@@ -931,13 +931,13 @@ const App = {
       starlightBtn.classList.add('hidden');
     }
 
-    // 绘制雷达图
-    this.drawRadar(dimPct);
-
     // 渲染附加感知题
     this.renderBonusQuestions();
 
     this.showPage('page-result');
+
+    // 雷达图需要在页面可见后延迟绘制（否则 Canvas 宽度为 0）
+    setTimeout(() => this.drawRadar(dimPct), 400);
   },
 
   // ---- Bonus Questions ----
