@@ -411,6 +411,84 @@ body {
   height: 100%;
 }
 
+/* 附加感知题（Bonus） */
+.bonus-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.bonus-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.bonus-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.bonus-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.bonus-question {
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bonus-q-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.5;
+}
+.bonus-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bonus-option {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+.bonus-option:hover {
+  border-color: var(--accent);
+  color: var(--text);
+  background: var(--accent-glow);
+}
+.bonus-option.selected {
+  border-color: var(--accent);
+  color: var(--text);
+  background: var(--accent-glow);
+  font-weight: 600;
+}
+.bonus-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.bonus-tag {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(192, 132, 252, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(192, 132, 252, 0.3);
+}
+
 /* 建议卡片 */
 .advice-card {
   width: 100%;
@@ -558,6 +636,16 @@ body {
       <canvas id="radar-canvas" width="500" height="500"></canvas>
     </div>
 
+    <!-- 附加感知题（Bonus） -->
+    <div class="bonus-section" id="bonus-section">
+      <div class="bonus-header">
+        <span class="bonus-label">🔍 AI 边界感感知</span>
+        <span class="bonus-hint">3 道附加题，不计入段位</span>
+      </div>
+      <div id="bonus-container"></div>
+      <div class="bonus-tags" id="bonus-tags"></div>
+    </div>
+
     <!-- 建议 -->
     <div class="advice-card">
       <div class="advice-label">💡 下一阶段建议</div>
@@ -598,8 +686,8 @@ const QUESTIONS = [
   },
   {
     id: 'q2',
-    dimension: '判断锐度',
-    dimensionIcon: '⚡',
+    dimension: '投入产出感知',
+    dimensionIcon: '📊',
     text: 'AI 给你的初稿，你通常怎么做？',
     options: [
       { text: '它给啥我用啥，看着还行', score: 1 },
@@ -659,6 +747,40 @@ const QUESTIONS = [
 ];
 
 /* ============================================
+   BONUS QUESTIONS (感知附加题)
+   不计入主段位，仅生成"AI 边界感"标签
+   ============================================ */
+const BONUS_QUESTIONS = [
+  {
+    id: 'bonus_q1',
+    question: '你是否注意到同一个 AI 在不同时间段对你的回复风格有变化？',
+    options: [
+      { text: '没注意过，能出活就行', tag: '感知力低' },
+      { text: '偶尔觉得它变啰嗦或变聪明了', tag: '感知力中' },
+      { text: '经常注意，甚至会故意调整提问方式来测试它的边界', tag: '感知力高' },
+    ]
+  },
+  {
+    id: 'bonus_q2',
+    question: '当 AI 准确说出你很久以前提过的偏好时，你的第一反应是？',
+    options: [
+      { text: '哇，它好贴心', tag: '依赖型' },
+      { text: '有点爽，但也有一丝警惕', tag: '觉醒型' },
+      { text: '马上检查它的记忆库，看它到底记了什么，允许它删改', tag: '掌控型' },
+    ]
+  },
+  {
+    id: 'bonus_q3',
+    question: '如果 AI 犯了一个你觉得"不该犯"的错，你会？',
+    options: [
+      { text: '算了，它毕竟是机器', tag: '宽容型' },
+      { text: '有点失望，换别的模型试试', tag: '比较型' },
+      { text: '思考是不是我刚才给的约束有漏洞', tag: '反思型' },
+    ]
+  },
+];
+
+/* ============================================
    RANK DEFINITIONS
    ============================================ */
 const RANKS = [
@@ -676,6 +798,7 @@ const RANKS = [
 const App = {
   currentQ: 0,
   answers: [],  // [{ questionId, dimension, score }]
+  bonusAnswers: [],  // [{ questionId, tag }]
 
   // ---- Page Navigation ----
   showPage(id) {
@@ -695,6 +818,7 @@ const App = {
   startQuiz() {
     this.currentQ = 0;
     this.answers = [];
+    this.bonusAnswers = [];
     this.showPage('page-quiz');
     this.renderQuestion();
   },
@@ -810,7 +934,50 @@ const App = {
     // 绘制雷达图
     this.drawRadar(dimPct);
 
+    // 渲染附加感知题
+    this.renderBonusQuestions();
+
     this.showPage('page-result');
+  },
+
+  // ---- Bonus Questions ----
+  renderBonusQuestions() {
+    const container = document.getElementById('bonus-container');
+    const tagsContainer = document.getElementById('bonus-tags');
+    tagsContainer.innerHTML = ''; // 清空旧标签
+
+    container.innerHTML = BONUS_QUESTIONS.map((q, qi) => `
+      <div class="bonus-question" id="bonus-${qi}">
+        <div class="bonus-q-text">${q.question}</div>
+        <div class="bonus-options">
+          ${q.options.map((opt, oi) => `
+            <button class="bonus-option" onclick="App.selectBonus(${qi}, ${oi}, '${opt.tag}')">${opt.text}</button>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  },
+
+  selectBonus(qIndex, optIndex, tag) {
+    const q = BONUS_QUESTIONS[qIndex];
+    // 清除该题的选中状态
+    document.querySelectorAll(`#bonus-${qIndex} .bonus-option`).forEach(el => el.classList.remove('selected'));
+    // 设置选中状态
+    document.querySelectorAll(`#bonus-${qIndex} .bonus-option`)[optIndex].classList.add('selected');
+    // 记录答案
+    this.bonusAnswers[qIndex] = { questionId: q.id, tag: tag };
+    // 更新标签
+    this.renderBonusTags();
+  },
+
+  renderBonusTags() {
+    const tagsContainer = document.getElementById('bonus-tags');
+    const tags = this.bonusAnswers.filter(a => a).map(a => a.tag);
+    if (tags.length === 0) {
+      tagsContainer.innerHTML = '';
+      return;
+    }
+    tagsContainer.innerHTML = tags.map(t => `<span class="bonus-tag">${t}</span>`).join('');
   },
 
   // ---- Radar Chart (Canvas) ----
@@ -914,7 +1081,9 @@ const App = {
   shareResult() {
     const rankName = document.getElementById('badge-rank').textContent;
     const score = document.getElementById('badge-score').textContent;
-    const text = `我的 AIQ 段位是【${rankName}】（${score}）！来测测你的 AI 协作段位 👉`;
+    const bonusTags = this.bonusAnswers.filter(a => a).map(a => a.tag);
+    const bonusText = bonusTags.length > 0 ? ` | AI边界感：${bonusTags.join(' / ')}` : '';
+    const text = `我的 AIQ 段位是【${rankName}】（${score}）${bonusText}！来测测你的 AI 协作段位 👉`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text).then(() => {
         this.toast('已复制到剪贴板');
@@ -927,6 +1096,7 @@ const App = {
   retake() {
     this.currentQ = 0;
     this.answers = [];
+    this.bonusAnswers = [];
     this.showPage('page-landing');
   },
 
