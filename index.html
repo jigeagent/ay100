@@ -3,555 +3,957 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ay100 · AI能力段位测试</title>
+<title>Ay100 · 你的 AIQ 是多少？</title>
 <style>
+/* ============================================
+   RESET & BASE
+   ============================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
 :root {
-  --bg: #f5f5f5;
-  --card: #ffffff;
-  --text: #1a1a1a;
-  --text-secondary: #666666;
-  --border: #e8e8e8;
-  --primary: #4f46e5;
-  --primary-light: #eef2ff;
-  --option-hover: #f0f0ff;
+  --bg: #0a0a0a;
+  --surface: #141414;
+  --surface-hover: #1e1e1e;
+  --border: #2a2a2a;
+  --border-active: #6366f1;
+  --text: #e4e4e7;
+  --text-secondary: #a1a1aa;
+  --text-muted: #52525b;
+  --accent: #818cf8;
+  --accent-glow: rgba(129, 140, 248, 0.15);
+  --gradient-start: #818cf8;
+  --gradient-end: #a78bfa;
+  --success: #34d399;
+  --warning: #fbbf24;
   --radius: 12px;
-  --shadow: 0 2px 8px rgba(0,0,0,0.06);
+  --radius-lg: 16px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html { font-size: 16px; -webkit-tap-highlight-color: transparent; }
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
-  line-height: 1.6;
-  min-height: 100vh;
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── 欢迎页 ── */
-.page { display: none; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
-.page.active { display: flex; }
+/* ============================================
+   PAGE SYSTEM
+   ============================================ */
+.page {
+  display: none;
+  width: 100%;
+  max-width: 480px;
+  min-height: 100dvh;
+  padding: 24px 20px;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity var(--transition), transform var(--transition);
+}
+.page.active {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
 
-#welcome-page {
+/* ============================================
+   LANDING PAGE
+   ============================================ */
+.landing-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 40px 24px;
+  gap: 28px;
+  padding-bottom: 40px;
 }
-#welcome-page .logo { font-size: 48px; margin-bottom: 16px; }
-#welcome-page h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; letter-spacing: 1px; }
-#welcome-page .subtitle { color: var(--text-secondary); font-size: 15px; margin-bottom: 40px; }
-#welcome-page .desc { color: var(--text-secondary); font-size: 14px; max-width: 320px; margin-bottom: 48px; line-height: 1.8; }
 
+.landing-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: 0 0 40px var(--accent-glow), 0 4px 16px rgba(0,0,0,0.4);
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 40px var(--accent-glow), 0 4px 16px rgba(0,0,0,0.4); }
+  50% { box-shadow: 0 0 60px rgba(129, 140, 248, 0.25), 0 4px 24px rgba(0,0,0,0.4); }
+}
+
+.landing-title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end), #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.landing-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+/* 四维标签 */
+.dimensions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: 340px;
+}
+.dimension-tag {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+.dimension-tag:nth-child(1) { border-color: rgba(99,102,241,0.3); color: #818cf8; }
+.dimension-tag:nth-child(2) { border-color: rgba(52,211,153,0.3); color: #34d399; }
+.dimension-tag:nth-child(3) { border-color: rgba(251,191,36,0.3); color: #fbbf24; }
+.dimension-tag:nth-child(4) { border-color: rgba(192,132,252,0.3); color: #c084fc; }
+
+/* 开始按钮 */
 .btn-primary {
-  display: inline-flex; align-items: center; justify-content: center;
-  background: var(--primary); color: #fff; border: none; border-radius: 24px;
-  padding: 14px 48px; font-size: 16px; font-weight: 600; cursor: pointer;
-  transition: all 0.2s; width: 100%; max-width: 280px;
+  width: 100%;
+  max-width: 320px;
+  padding: 16px 24px;
+  border-radius: var(--radius);
+  border: none;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  box-shadow: 0 4px 24px var(--accent-glow);
+  transition: var(--transition);
+  -webkit-user-select: none;
+  user-select: none;
 }
-.btn-primary:active { transform: scale(0.97); opacity: 0.9; }
+.btn-primary:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 12px var(--accent-glow);
+}
 
-/* ── 答题页 ── */
-#quiz-page {
-  padding: 0 20px;
+/* 底部 */
+.page-footer {
+  padding-top: 20px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
 }
+.page-footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* ============================================
+   QUIZ PAGE
+   ============================================ */
 .quiz-header {
-  position: sticky; top: 0; background: var(--bg); z-index: 10;
-  padding: 16px 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
 }
-.progress-info {
-  display: flex; justify-content: space-between; align-items: center;
-  font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;
+
+.btn-back {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
 }
+.btn-back:active { background: var(--surface-hover); }
+
+.progress-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* 进度条 */
 .progress-bar {
-  height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  margin-bottom: 24px;
+  overflow: hidden;
 }
 .progress-fill {
-  height: 100%; background: var(--primary); border-radius: 2px;
-  transition: width 0.3s ease;
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.quiz-body {
-  flex: 1; display: flex; flex-direction: column; justify-content: center;
-  padding: 24px 0 60px;
-  animation: fadeIn 0.3s ease;
+/* 题目卡片 */
+.question-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 
-.question-number { font-size: 13px; color: var(--primary); font-weight: 600; margin-bottom: 8px; }
-.question-text { font-size: 20px; font-weight: 700; line-height: 1.5; margin-bottom: 32px; }
-
-.options { display: flex; flex-direction: column; gap: 12px; }
-.option-btn {
-  display: block; width: 100%; text-align: left;
-  background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius);
-  padding: 16px 18px; font-size: 15px; line-height: 1.6; cursor: pointer;
-  transition: all 0.15s; color: var(--text);
-}
-.option-btn:active { border-color: var(--primary); background: var(--primary-light); transform: scale(0.985); }
-.option-label { font-weight: 600; margin-right: 6px; color: var(--primary); }
-
-/* ── 结果页 ── */
-#result-page {
+.dimension-label {
+  display: inline-flex;
   align-items: center;
-  padding: 32px 20px 48px;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--accent-glow);
+  color: var(--accent);
+  width: fit-content;
+}
+
+.question-text {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.3px;
+}
+
+/* 选项 */
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.option-card {
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.option-card:active {
+  border-color: var(--border-active);
+  background: var(--surface-hover);
+  transform: scale(0.98);
+}
+.option-letter {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  transition: var(--transition);
+}
+.option-card:active .option-letter {
+  background: var(--accent);
+  color: #fff;
+}
+.option-text {
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+/* ============================================
+   RESULT PAGE
+   ============================================ */
+.result-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding-bottom: 40px;
+}
+
+/* 段位徽章 */
+.badge-container {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-top: 16px;
+}
+
+/* 段位徽章外环（旋转光效） */
+.badge-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  padding: 3px;
+  animation: spin 4s linear infinite;
+}
+.badge-ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  padding: 3px;
+  background: conic-gradient(from 0deg, transparent 40%, var(--badge-color) 60%, transparent 80%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 段位徽章内圆 */
+.badge-inner {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  z-index: 1;
+  box-shadow: 0 0 30px var(--badge-glow);
+}
+
+.badge-icon { font-size: 28px; }
+.badge-rank {
+  font-size: 22px;
+  font-weight: 800;
+  margin-top: 2px;
+}
+.badge-score {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* 各段位配色 */
+[data-rank="bronze"]  { --badge-color: #cd7f32; --badge-glow: rgba(205,127,50,0.2); }
+[data-rank="silver"]  { --badge-color: #c0c0c0; --badge-glow: rgba(192,192,192,0.2); }
+[data-rank="gold"]    { --badge-color: #fbbf24; --badge-glow: rgba(251,191,36,0.2); }
+[data-rank="platinum"]{ --badge-color: #818cf8; --badge-glow: rgba(129,140,248,0.25); }
+[data-rank="diamond"] { --badge-color: #67e8f9; --badge-glow: rgba(103,232,249,0.2); }
+[data-rank="legend"]  { --badge-color: #f472b6; --badge-glow: rgba(244,114,182,0.25); }
+
+.result-rank-name {
+  font-size: 24px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--badge-color), var(--badge-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.result-comment {
+  font-size: 14px;
+  color: var(--text-secondary);
   text-align: center;
+  line-height: 1.5;
+  max-width: 320px;
 }
-.result-card {
-  background: var(--card); border-radius: 16px; padding: 32px 24px;
-  box-shadow: var(--shadow); max-width: 400px; width: 100%; margin-bottom: 24px;
+
+/* 雷达图 */
+.radar-wrapper {
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 1;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  padding: 16px;
 }
-.result-rank { font-size: 48px; margin-bottom: 8px; }
-.result-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-.result-score { font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; }
-.result-desc { font-size: 15px; color: var(--text); margin-bottom: 12px; line-height: 1.7; }
-.result-advice { font-size: 13px; color: var(--text-secondary); background: var(--bg); border-radius: 8px; padding: 12px 16px; text-align: left; line-height: 1.7; }
+.radar-wrapper canvas {
+  width: 100%;
+  height: 100%;
+}
 
-#rank-canvas { display: none; }
+/* 建议卡片 */
+.advice-card {
+  width: 100%;
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.advice-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.advice-text {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+}
 
+/* 分享 & 导流 */
 .result-actions {
-  display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 340px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-.result-btn {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  width: 100%; border: none; border-radius: 24px; padding: 14px 24px;
-  font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.15s;
-}
-.result-btn:active { transform: scale(0.97); }
-.result-btn.save { background: var(--primary); color: #fff; }
-.result-btn.share { background: var(--card); color: var(--text); border: 1.5px solid var(--border); }
-.result-btn.starfilm { background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; }
 
-.share-toast {
-  position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
-  background: rgba(0,0,0,0.8); color: #fff; padding: 10px 24px; border-radius: 20px;
-  font-size: 14px; z-index: 99; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+.btn-secondary {
+  width: 100%;
+  padding: 14px 24px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  -webkit-user-select: none;
+  user-select: none;
 }
-.share-toast.show { opacity: 1; }
+.btn-secondary:active {
+  background: var(--surface-hover);
+  transform: scale(0.98);
+}
 
-/* ── canvas 段位卡渲染样式（仅用于 canvas drawText 参考） ── */
+.btn-starlight {
+  background: linear-gradient(135deg, rgba(129,140,248,0.15), rgba(167,139,250,0.15));
+  border-color: rgba(129,140,248,0.3);
+  color: var(--accent);
+}
+.btn-starlight:active {
+  border-color: var(--accent);
+}
+
+/* ============================================
+   UTILITY
+   ============================================ */
+.hidden { display: none !important; }
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (min-width: 768px) {
+  .page { padding: 32px 24px; }
+  .landing-title { font-size: 40px; }
+  .question-text { font-size: 22px; }
+}
+@media (max-width: 374px) {
+  .landing-title { font-size: 26px; }
+  .question-text { font-size: 17px; }
+  .badge-container { width: 120px; height: 120px; }
+  .badge-inner { width: 96px; height: 96px; }
+}
 </style>
 </head>
 <body>
 
-<!-- 欢迎页 -->
-<div id="welcome-page" class="page active">
-  <div class="logo">🎯</div>
-  <h1>Ay100</h1>
-  <p class="subtitle">AI 能力段位测试</p>
-  <p class="desc">6 道题，测出你的 AI 真实段位<br>豆包都收费了，你是什么段位？</p>
-  <button class="btn-primary" onclick="startQuiz()">开始测试</button>
-</div>
-
-<!-- 答题页 -->
-<div id="quiz-page" class="page">
-  <div class="quiz-header">
-    <div class="progress-info">
-      <span id="progress-label">第1题 / 共6题</span>
-      <span id="progress-pct">16%</span>
+<!-- ============================================
+     PAGE 1: LANDING
+     ============================================ -->
+<div id="page-landing" class="page active">
+  <div class="landing-content">
+    <div class="landing-logo">AI</div>
+    <div>
+      <h1 class="landing-title">你的 AIQ 是多少？</h1>
+      <p class="landing-subtitle">6 题测出你的 AI 协作段位</p>
     </div>
-    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+    <div class="dimensions">
+      <span class="dimension-tag">🧠 提示素养</span>
+      <span class="dimension-tag">💡 算法共情</span>
+      <span class="dimension-tag">⚡ 判断锐度</span>
+      <span class="dimension-tag">📊 投入产出感知</span>
+    </div>
+
+    <button class="btn-primary" onclick="App.startQuiz()">开始测试</button>
   </div>
-  <div class="quiz-body" id="quiz-body"></div>
+  <div class="page-footer">Powered by <a href="#">AI生存学</a></div>
 </div>
 
-<!-- 结果页 -->
-<div id="result-page" class="page">
-  <div class="result-card">
-    <div class="result-rank" id="result-rank"></div>
-    <div class="result-title" id="result-title"></div>
-    <div class="result-score" id="result-score"></div>
-    <div class="result-desc" id="result-desc"></div>
-    <div class="result-advice" id="result-advice"></div>
+<!-- ============================================
+     PAGE 2: QUIZ
+     ============================================ -->
+<div id="page-quiz" class="page">
+  <div class="quiz-header">
+    <button class="btn-back" onclick="App.prevQuestion()" id="btn-back">←</button>
+    <span class="progress-text" id="progress-text">Q1/6</span>
+    <span style="width:36px"></span>
   </div>
-  <canvas id="rank-canvas" width="800" height="1200"></canvas>
-  <div class="result-actions">
-    <button class="result-btn save" onclick="saveImage()">📤 保存图片</button>
-    <button class="result-btn share" onclick="shareLink()">🔗 分享给朋友测测</button>
-    <button class="result-btn starfilm" onclick="starfilm()">🚀 推荐到Starfilm星光计划</button>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill" style="width: 16.6%"></div>
+  </div>
+
+  <div class="question-card" id="question-card">
+    <!-- 动态渲染 -->
   </div>
 </div>
 
-<div class="share-toast" id="toast">已复制到剪贴板</div>
+<!-- ============================================
+     PAGE 3: RESULT
+     ============================================ -->
+<div id="page-result" class="page">
+  <div class="result-content">
+    <!-- 段位徽章 -->
+    <div class="badge-container" id="badge-container" data-rank="bronze">
+      <div class="badge-ring"></div>
+      <div class="badge-inner">
+        <span class="badge-icon" id="badge-icon">🥉</span>
+        <span class="badge-rank" id="badge-rank">青铜</span>
+        <span class="badge-score" id="badge-score">6分</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="result-rank-name" id="result-rank-name">青铜段位</div>
+      <p class="result-comment" id="result-comment">AI 协作的旅程刚刚开始，潜力无限。</p>
+    </div>
+
+    <!-- 雷达图 -->
+    <div class="radar-wrapper">
+      <canvas id="radar-canvas" width="500" height="500"></canvas>
+    </div>
+
+    <!-- 建议 -->
+    <div class="advice-card">
+      <div class="advice-label">💡 下一阶段建议</div>
+      <p class="advice-text" id="advice-text">建议</p>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="result-actions">
+      <button class="btn-primary" onclick="App.shareResult()">📤 分享我的段位</button>
+      <button class="btn-secondary" onclick="App.retake()">🔄 再测一次</button>
+      <!-- 星光计划入口：仅铂金+段位可见 -->
+      <button class="btn-secondary btn-starlight hidden" id="btn-starlight" onclick="App.starlightPlan()">✨ 加入星光计划</button>
+    </div>
+  </div>
+  <div class="page-footer">Powered by <a href="#">AI生存学</a></div>
+</div>
 
 <script>
-// ── 题目数据 ──
-const questions = [
+/* ============================================
+   QUESTION DATA
+   修改此处即可替换真实题目
+   dimension: 维度标签
+   text: 题干
+   options: [{ text, score: 1-6 }]
+   ============================================ */
+const QUESTIONS = [
   {
-    q: "你让AI写一篇公众号推文，你的第一步是？",
+    id: 'q1',
+    dimension: '提示素养',
+    dimensionIcon: '🧠',
+    text: 'Q1（提示素养）：题干占位符？',
     options: [
-      { label: "A", text: "打开对话框说'帮我写一篇推文'", score: 1 },
-      { label: "B", text: "在网上找个Prompt模板粘贴进去", score: 2 },
-      { label: "C", text: "自己写好主题、风格、字数、目标受众，再发给AI", score: 3 },
-      { label: "D", text: "先写大纲框架+关键数据，让AI填充，然后我逐段审核", score: 4 }
+      { text: '选项占位符 A', score: 1 },
+      { text: '选项占位符 B', score: 2 },
+      { text: '选项占位符 C', score: 3 },
+      { text: '选项占位符 D', score: 4 },
     ]
   },
   {
-    q: "AI给你的初稿，你通常怎么做？",
+    id: 'q2',
+    dimension: '算法共情',
+    dimensionIcon: '💡',
+    text: 'Q2（算法共情）：题干占位符？',
     options: [
-      { label: "A", text: "它给啥我用啥，看着还行", score: 1 },
-      { label: "B", text: "微调几个词就发了", score: 2 },
-      { label: "C", text: "重写40%以上，只保留AI的框架", score: 3 },
-      { label: "D", text: "我只看AI的结果是否符合我设定的约束条件，不符合就改约束重新跑", score: 4 }
+      { text: '选项占位符 A', score: 1 },
+      { text: '选项占位符 B', score: 2 },
+      { text: '选项占位符 C', score: 3 },
+      { text: '选项占位符 D', score: 4 },
     ]
   },
   {
-    q: "遇到AI胡编乱造（幻觉），你会？",
+    id: 'q3',
+    dimension: '判断锐度',
+    dimensionIcon: '⚡',
+    text: 'Q3（判断锐度）：题干占位符？',
     options: [
-      { label: "A", text: "换一个AI再问一次", score: 1 },
-      { label: "B", text: "重新发一次同样的问题碰运气", score: 2 },
-      { label: "C", text: "把问题拆小，分步问，加参考材料", score: 3 },
-      { label: "D", text: "分析AI在哪个约束点上跑偏了（目标不清/边界没设/参考不够），修复约束再跑", score: 4 }
+      { text: '选项占位符 A', score: 1 },
+      { text: '选项占位符 B', score: 2 },
+      { text: '选项占位符 C', score: 3 },
+      { text: '选项占位符 D', score: 4 },
     ]
   },
   {
-    q: "你在用AI这件事上，每月的投入产出比如何？",
+    id: 'q4',
+    dimension: '投入产出感知',
+    dimensionIcon: '📊',
+    text: 'Q4（投入产出感知）：题干占位符？',
     options: [
-      { label: "A", text: "没用过AI，0投入0产出", score: 1 },
-      { label: "B", text: "偶尔用免费工具，基本没花钱", score: 2 },
-      { label: "C", text: "开了会员，感觉省了不少时间", score: 3 },
-      { label: "D", text: "有策略地用AI——简单任务用便宜的，复杂任务用好模型，产出远超投入", score: 4 }
+      { text: '选项占位符 A', score: 1 },
+      { text: '选项占位符 B', score: 2 },
+      { text: '选项占位符 C', score: 3 },
+      { text: '选项占位符 D', score: 4 },
     ]
   },
   {
-    q: "同一个任务你更喜欢哪种方式？",
+    id: 'q5',
+    dimension: '提示素养',
+    dimensionIcon: '🧠',
+    text: 'Q5（提示素养）：题干占位符？',
     options: [
-      { label: "A", text: "找一个最厉害的大模型一次性搞定", score: 1 },
-      { label: "B", text: "让AI先出个框架我自己改", score: 2 },
-      { label: "C", text: "拆成多个小任务分给不同AI，最后合并", score: 3 },
-      { label: "D", text: "搭建自动化管道：小模型做预处理→中等模型做初稿→大模型做终审→自动发布", score: 4 }
+      { text: '选项占位符 A', score: 1 },
+      { text: '选项占位符 B', score: 2 },
+      { text: '选项占位符 C', score: 3 },
+      { text: '选项占位符 D', score: 4 },
     ]
   },
   {
-    q: '如果有人跟你说"用AI能省钱"，你第一反应是？',
+    id: 'q6',
+    dimension: '算法共情',
+    dimensionIcon: '💡',
+    text: 'Q6（算法共情）：题干占位符？',
     options: [
-      { label: "A", text: "AI要花钱的，怎么可能省钱", score: 1 },
-      { label: "B", text: "试试看，能不能省不知道", score: 2 },
-      { label: "C", text: "确实，熟练了能省时间省人工", score: 3 },
-      { label: "D", text: "省钱的核心不是省token，是省返工。约束越精准，返工越少，越省钱", score: 4 }
+      { text: '选项占位符 A', score: 1 },
+      { text: '选项占位符 B', score: 2 },
+      { text: '选项占位符 C', score: 3 },
+      { text: '选项占位符 D', score: 4 },
     ]
-  }
+  },
 ];
 
-const bonusQuestions = [
-  {
-    q: '你的Prompt库里，有多少个"负约束模板"？',
-    options: [
-      { label: "A", text: "0个", score: 1 },
-      { label: "B", text: "1-3个", score: 2 },
-      { label: "C", text: "3-10个", score: 3 },
-      { label: "D", text: "不是模板，是一套方法论", score: 4 }
-    ]
-  },
-  {
-    q: "你用过模型路由吗？",
-    options: [
-      { label: "A", text: "没听说过", score: 1 },
-      { label: "B", text: "知道但没用过", score: 2 },
-      { label: "C", text: "手动切换", score: 3 },
-      { label: "D", text: "自动化路由", score: 4 }
-    ]
-  },
-  {
-    q: "你的AI工作流，其他人能直接复用吗？",
-    options: [
-      { label: "A", text: "只有我自己知道", score: 1 },
-      { label: "B", text: "能教但需要带", score: 2 },
-      { label: "C", text: "写了SOP分享", score: 3 },
-      { label: "D", text: "封装成模板/配置包一键部署", score: 4 }
-    ]
-  },
-  {
-    q: "AI给的东西，你怎么验证？",
-    options: [
-      { label: "A", text: "看着大概合理就行", score: 1 },
-      { label: "B", text: "找另一个AI交叉验证", score: 2 },
-      { label: "C", text: "有固定验证清单", score: 3 },
-      { label: "D", text: "把验证规则写进约束里让AI自己先验", score: 4 }
-    ]
-  }
+/* ============================================
+   RANK DEFINITIONS
+   ============================================ */
+const RANKS = [
+  { name: '青铜', icon: '🥉', min: 6,  max: 8,  pct: '35%', comment: 'AI 协作的旅程刚刚开始，潜力无限。', advice: '从学会写好第一条提示开始，每天用 AI 完成一个小任务。' },
+  { name: '白银', icon: '🥈', min: 9,  max: 11, pct: '30%', comment: '已经掌握了基础用法，但还有很大提升空间。', advice: '尝试结构化提示词，学习 Few-shot 技巧。' },
+  { name: '黄金', icon: '🥇', min: 12, max: 14, pct: '20%', comment: 'AI 协作能力不错，已经成为你工作流的一部分。', advice: '探索高级提示工程，开始构建个人 Prompt 库。' },
+  { name: '铂金', icon: '💎', min: 15, max: 17, pct: '10%', comment: '优秀的 AI 协作者，深度理解 AI 的能力边界。', advice: '尝试复杂任务编排，考虑向社区分享你的经验。' },
+  { name: '钻石', icon: '👑', min: 18, max: 20, pct: '4%',  comment: '顶尖水平！AI 已经成为你的第二大脑。', advice: '探索 AI Agent 开发，参与开源项目。' },
+  { name: '传奇', icon: '🏆', min: 21, max: 24, pct: '1%',  comment: '你是 AI 协作的先行者，定义了 AIQ 的上限。', advice: '你的经验值得被更多人看到，考虑成为导师。' },
 ];
 
-// ── 段位定义 ──
-const ranks = {
-  bronze:  { emoji: "🥉", name: "青铜 · AI局外人", color: "#8B8B8B", bgGrad: ["#e0e0e0","#bdbdbd"], desc: "AI 对你来说还是个新鲜词，但没关系，每个人都是从零开始的。", advice: "💡 建议：从日常小任务开始，试着让 AI 帮你写邮件、列清单、查资料，感受一下 AI 的便利。" },
-  silver:  { emoji: "🥈", name: "白银 · AI尝鲜者", color: "#78909C", bgGrad: ["#e8edf0","#cfd8dc"], desc: "你已经开始尝试 AI 了，但还在摸索阶段。偶尔会用，但还没形成稳定的使用习惯。", advice: "💡 建议：试试给 AI 更明确的指令——告诉它你的目标、风格、字数要求，你会发现效果大不同。" },
-  gold:    { emoji: "🥇", name: "黄金 · AI效率党", color: "#E8A838", bgGrad: ["#FFF8E1","#FFECB3"], desc: "你已经是 AI 的熟练玩家了！知道怎么用好 AI 提升效率，偶尔也会给 AI 设定约束条件。", advice: "💡 建议：进阶方向——学习负约束（告诉 AI 不要做什么）、搭建多步工作流、尝试模型路由。" },
-  platinum_jr: { emoji: "💎", name: "铂金初级", color: "#42A5F5", bgGrad: ["#E3F2FD","#BBDEFB"], desc: "你不仅会用 AI，还开始思考怎么系统化地用。负约束、模型路由，你都有概念了。", advice: "💡 建议：把你的方法论沉淀下来，写成 SOP 或者模板，让团队也能复用。" },
-  platinum_mid:{ emoji: "💎", name: "铂金中级", color: "#1E88E5", bgGrad: ["#E3F2FD","#90CAF9"], desc: "你已经有一套自己的 AI 使用体系了，知道什么时候用什么模型，怎么设定边界。", advice: "💡 建议：尝试自动化——用 API 把工作流串起来，减少人工干预。" },
-  platinum_sr: { emoji: "💎", name: "铂金高级", color: "#1565C0", bgGrad: ["#E3F2FD","#64B5F6"], desc: "你的 AI 能力已经超越了绝大多数人。你有系统、有方法论、有 SOP。", advice: "💡 建议：考虑把验证规则嵌入工作流本身，让 AI 自己先验，进一步减少返工。" },
-  diamond: { emoji: "👑", name: "钻石 · AI共生者", color: "#9C27B0", bgGrad: ["#F3E5F5","#E1BEE7"], desc: "你已经站在 AI 使用的金字塔尖。AI 不是工具，而是你的思维伙伴。约束精准、自动验证、全链路自动化。", advice: "🎯 你已经是顶级玩家，下一步可能是：开源分享、带团队、构建 AI 原生产品。" }
+/* ============================================
+   APP
+   ============================================ */
+const App = {
+  currentQ: 0,
+  answers: [],  // [{ questionId, dimension, score }]
+
+  // ---- Page Navigation ----
+  showPage(id) {
+    document.querySelectorAll('.page').forEach(p => {
+      p.classList.remove('active');
+      p.style.display = 'none';
+    });
+    const page = document.getElementById(id);
+    // 小延迟以触发 CSS transition
+    requestAnimationFrame(() => {
+      page.style.display = 'flex';
+      requestAnimationFrame(() => page.classList.add('active'));
+    });
+  },
+
+  // ---- Quiz Logic ----
+  startQuiz() {
+    this.currentQ = 0;
+    this.answers = [];
+    this.showPage('page-quiz');
+    this.renderQuestion();
+  },
+
+  renderQuestion() {
+    const q = QUESTIONS[this.currentQ];
+    const total = QUESTIONS.length;
+    const progressPct = ((this.currentQ + 1) / total) * 100;
+
+    // 更新进度
+    document.getElementById('progress-text').textContent = `Q${this.currentQ + 1}/${total}`;
+    document.getElementById('progress-fill').style.width = `${progressPct}%`;
+
+    // 返回按钮：第一题禁用
+    document.getElementById('btn-back').style.visibility = this.currentQ === 0 ? 'hidden' : 'visible';
+
+    // 渲染题目
+    const card = document.getElementById('question-card');
+    card.innerHTML = `
+      <span class="dimension-label">${q.dimensionIcon} ${q.dimension}</span>
+      <h2 class="question-text">${q.text}</h2>
+      <div class="options-list">
+        ${q.options.map((opt, i) => {
+          const letter = String.fromCharCode(65 + i); // A, B, C, D
+          return `
+            <div class="option-card" onclick="App.selectOption(${this.currentQ}, ${i})" role="button" tabindex="0">
+              <span class="option-letter">${letter}</span>
+              <span class="option-text">${opt.text}</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+
+    // 重新加动画
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(12px)';
+    requestAnimationFrame(() => {
+      card.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    });
+  },
+
+  selectOption(qIndex, optIndex) {
+    const q = QUESTIONS[qIndex];
+    const opt = q.options[optIndex];
+
+    this.answers.push({
+      questionId: q.id,
+      dimension: q.dimension,
+      score: opt.score,
+    });
+
+    if (this.currentQ < QUESTIONS.length - 1) {
+      this.currentQ++;
+      this.renderQuestion();
+    } else {
+      this.showResult();
+    }
+  },
+
+  prevQuestion() {
+    if (this.currentQ > 0) {
+      this.currentQ--;
+      this.answers.pop();
+      this.renderQuestion();
+    }
+  },
+
+  // ---- Result Logic ----
+  showResult() {
+    const totalScore = this.answers.reduce((sum, a) => sum + a.score, 0);
+
+    // 计算各维度得分
+    const dimScores = {};
+    const dimCounts = {};
+    this.answers.forEach(a => {
+      dimScores[a.dimension] = (dimScores[a.dimension] || 0) + a.score;
+      dimCounts[a.dimension] = (dimCounts[a.dimension] || 0) + 1;
+    });
+    // 归一化到百分比（每题最高4分）
+    const dimPct = {};
+    for (const dim in dimScores) {
+      dimPct[dim] = (dimScores[dim] / (dimCounts[dim] * 4)) * 100;
+    }
+
+    // 匹配段位
+    const rank = RANKS.find(r => totalScore >= r.min && totalScore <= r.max);
+
+    // 填充 DOM
+    const badgeContainer = document.getElementById('badge-container');
+    badgeContainer.setAttribute('data-rank', {
+      '青铜': 'bronze', '白银': 'silver', '黄金': 'gold',
+      '铂金': 'platinum', '钻石': 'diamond', '传奇': 'legend',
+    }[rank.name]);
+
+    document.getElementById('badge-icon').textContent = rank.icon;
+    document.getElementById('badge-rank').textContent = rank.name;
+    document.getElementById('badge-score').textContent = `${totalScore}分`;
+    document.getElementById('result-rank-name').textContent = `${rank.name}段位`;
+    document.getElementById('result-comment').textContent = rank.comment;
+    document.getElementById('advice-text').textContent = rank.advice;
+
+    // 星光计划：铂金+可见
+    const starlightBtn = document.getElementById('btn-starlight');
+    if (['铂金', '钻石', '传奇'].includes(rank.name)) {
+      starlightBtn.classList.remove('hidden');
+    } else {
+      starlightBtn.classList.add('hidden');
+    }
+
+    // 绘制雷达图
+    this.drawRadar(dimPct);
+
+    this.showPage('page-result');
+  },
+
+  // ---- Radar Chart (Canvas) ----
+  drawRadar(dimPct) {
+    const canvas = document.getElementById('radar-canvas');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const size = canvas.parentElement.clientWidth - 32; // padding accounted
+
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    canvas.style.width = size + 'px';
+    canvas.style.height = size + 'px';
+    ctx.scale(dpr, dpr);
+
+    const cx = size / 2;
+    const cy = size / 2;
+    const r = size * 0.35;
+
+    // 维度顺序
+    const dims = ['提示素养', '算法共情', '判断锐度', '投入产出感知'];
+    const n = dims.length;
+    const angleStep = (Math.PI * 2) / n;
+    const startAngle = -Math.PI / 2; // 从顶部开始
+
+    // 绘制网格
+    const gridLevels = [0.2, 0.4, 0.6, 0.8, 1.0];
+    ctx.strokeStyle = '#2a2a2a';
+    ctx.lineWidth = 1;
+    gridLevels.forEach(level => {
+      ctx.beginPath();
+      for (let i = 0; i <= n; i++) {
+        const angle = startAngle + angleStep * (i % n);
+        const x = cx + Math.cos(angle) * r * level;
+        const y = cy + Math.sin(angle) * r * level;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.stroke();
+    });
+
+    // 绘制轴线
+    for (let i = 0; i < n; i++) {
+      const angle = startAngle + angleStep * i;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r);
+      ctx.strokeStyle = '#2a2a2a';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // 绘制数据区域
+    const dimColors = ['#818cf8', '#34d399', '#fbbf24', '#c084fc'];
+    ctx.beginPath();
+    for (let i = 0; i <= n; i++) {
+      const idx = i % n;
+      const angle = startAngle + angleStep * idx;
+      const pct = (dimPct[dims[idx]] || 0) / 100;
+      const x = cx + Math.cos(angle) * r * pct;
+      const y = cy + Math.sin(angle) * r * pct;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(129, 140, 248, 0.15)';
+    ctx.fill();
+    ctx.strokeStyle = '#818cf8';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 绘制数据点
+    for (let i = 0; i < n; i++) {
+      const angle = startAngle + angleStep * i;
+      const pct = (dimPct[dims[i]] || 0) / 100;
+      const x = cx + Math.cos(angle) * r * pct;
+      const y = cy + Math.sin(angle) * r * pct;
+
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = dimColors[i];
+      ctx.fill();
+    }
+
+    // 绘制标签
+    ctx.font = '600 13px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (let i = 0; i < n; i++) {
+      const angle = startAngle + angleStep * i;
+      const labelR = r + 28;
+      const x = cx + Math.cos(angle) * labelR;
+      const y = cy + Math.sin(angle) * labelR;
+      ctx.fillStyle = dimColors[i];
+      ctx.fillText(dims[i], x, y);
+    }
+  },
+
+  // ---- Actions ----
+  shareResult() {
+    const rankName = document.getElementById('badge-rank').textContent;
+    const score = document.getElementById('badge-score').textContent;
+    const text = `我的 AIQ 段位是【${rankName}】（${score}）！来测测你的 AI 协作段位 👉`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        this.toast('已复制到剪贴板');
+      });
+    } else {
+      this.toast('分享功能：' + text);
+    }
+  },
+
+  retake() {
+    this.currentQ = 0;
+    this.answers = [];
+    this.showPage('page-landing');
+  },
+
+  starlightPlan() {
+    // TODO: 接入星光计划落地页
+    this.toast('✨ 星光计划入口（待接入）');
+  },
+
+  toast(msg) {
+    let t = document.getElementById('toast-el');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'toast-el';
+      t.style.cssText = `
+        position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+        background: var(--surface); color: var(--text); padding: 10px 20px;
+        border-radius: 8px; font-size: 14px; border: 1px solid var(--border);
+        z-index: 999; transition: opacity 0.2s;
+      `;
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.style.opacity = '0'; }, 2000);
+  },
 };
-
-// ── 状态 ──
-let currentQ = 0;
-let totalScore = 0;
-let bonusScore = 0;
-let isBonus = false;
-let currentQuestions = questions;
-
-function getActiveQuestions() {
-  return isBonus ? bonusQuestions : questions;
-}
-
-// ── 页面切换 ──
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-// ── 开始测试 ──
-function startQuiz() {
-  currentQ = 0;
-  totalScore = 0;
-  bonusScore = 0;
-  isBonus = false;
-  currentQuestions = questions;
-  showPage('quiz-page');
-  renderQuestion();
-}
-
-// ── 渲染题目 ──
-function renderQuestion() {
-  const qs = getActiveQuestions();
-  const q = qs[currentQ];
-  const total = isBonus ? questions.length + bonusQuestions.length : questions.length;
-  const idx = isBonus ? questions.length + currentQ + 1 : currentQ + 1;
-  const pct = Math.round((idx / total) * 100);
-
-  document.getElementById('progress-label').textContent = `第${idx}题 / 共${total}题`;
-  document.getElementById('progress-pct').textContent = pct + '%';
-  document.getElementById('progress-fill').style.width = pct + '%';
-
-  const container = document.getElementById('quiz-body');
-  container.style.opacity = '0';
-  container.style.transform = 'translateY(12px)';
-  setTimeout(() => { container.style.opacity = '1'; container.style.transform = 'none'; }, 50);
-  let html = '';
-  html += `<div class="question-number">QUESTION ${idx}</div>`;
-  html += `<div class="question-text">${q.q}</div>`;
-  html += `<div class="options">`;
-  q.options.forEach((opt, i) => {
-    html += `<button class="option-btn" onclick="selectOption(${i})"><span class="option-label">${opt.label}.</span> ${opt.text}</button>`;
-  });
-  html += `</div>`;
-  container.innerHTML = html;
-}
-
-// ── 选择选项 ──
-function selectOption(idx) {
-  const qs = getActiveQuestions();
-  const q = qs[currentQ];
-  const score = q.options[idx].score;
-
-  if (isBonus) {
-    bonusScore += score;
-  } else {
-    totalScore += score;
-  }
-
-  currentQ++;
-
-  if (isBonus && currentQ >= bonusQuestions.length) {
-    showResult();
-    return;
-  }
-
-  if (!isBonus && currentQ >= questions.length) {
-    // 判断是否进入追加题
-    if (totalScore >= 19) {
-      isBonus = true;
-      currentQ = 0;
-      currentQuestions = bonusQuestions;
-      renderQuestion();
-    } else {
-      showResult();
-    }
-    return;
-  }
-
-  renderQuestion();
-}
-
-// ── 获取段位 ──
-function getRank() {
-  if (isBonus) {
-    if (bonusScore >= 13) return ranks.diamond;
-    if (bonusScore >= 10) return ranks.platinum_sr;
-    if (bonusScore >= 7) return ranks.platinum_mid;
-    return ranks.platinum_jr;
-  }
-  if (totalScore >= 13) return ranks.gold;
-  if (totalScore >= 7) return ranks.silver;
-  return ranks.bronze;
-}
-
-// ── 显示结果 ──
-function showResult() {
-  const rank = getRank();
-  const finalScore = isBonus ? totalScore + bonusScore : totalScore;
-
-  document.getElementById('result-rank').textContent = rank.emoji;
-  document.getElementById('result-title').textContent = rank.name;
-  document.getElementById('result-title').style.color = rank.color;
-  document.getElementById('result-score').textContent = `总分 ${finalScore} 分`;
-  document.getElementById('result-desc').textContent = rank.desc;
-  document.getElementById('result-advice').textContent = rank.advice;
-
-  showPage('result-page');
-  drawRankCard(rank, finalScore);
-}
-
-// ── Canvas 段位卡 ──
-function drawRankCard(rank, finalScore) {
-  const canvas = document.getElementById('rank-canvas');
-  const ctx = canvas.getContext('2d');
-  const W = 800, H = 1200;
-  canvas.width = W;
-  canvas.height = H;
-
-  // 背景渐变
-  const grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, rank.bgGrad[0]);
-  grad.addColorStop(1, rank.bgGrad[1]);
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, H);
-
-  // 顶部装饰线
-  ctx.fillStyle = rank.color;
-  ctx.fillRect(0, 0, W, 8);
-
-  // Ay100 Logo
-  ctx.fillStyle = '#1a1a1a';
-  ctx.font = 'bold 36px -apple-system, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('Ay100', W / 2, 80);
-
-  ctx.fillStyle = '#666';
-  ctx.font = '24px -apple-system, sans-serif';
-  ctx.fillText('AI 能力段位测试', W / 2, 120);
-
-  // 段位图标
-  ctx.font = '120px serif';
-  ctx.fillText(rank.emoji, W / 2, 280);
-
-  // 段位名称
-  ctx.fillStyle = rank.color;
-  ctx.font = 'bold 48px -apple-system, sans-serif';
-  ctx.fillText(rank.name, W / 2, 360);
-
-  // 分数
-  ctx.fillStyle = '#666';
-  ctx.font = '28px -apple-system, sans-serif';
-  ctx.fillText(`总分 ${finalScore} 分`, W / 2, 420);
-
-  // 分隔线
-  ctx.strokeStyle = '#ddd';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(100, 460);
-  ctx.lineTo(700, 460);
-  ctx.stroke();
-
-  // 定位描述
-  ctx.fillStyle = '#333';
-  ctx.font = '26px -apple-system, sans-serif';
-  const descLines = wrapText(ctx, rank.desc, 600);
-  let y = 510;
-  descLines.forEach(line => {
-    ctx.fillText(line, W / 2, y);
-    y += 38;
-  });
-
-  // 升段建议
-  ctx.fillStyle = '#555';
-  ctx.font = '22px -apple-system, sans-serif';
-  const adviceLines = wrapText(ctx, rank.advice, 600);
-  y += 20;
-  adviceLines.forEach(line => {
-    ctx.fillText(line, W / 2, y);
-    y += 34;
-  });
-
-  // 底部标语
-  ctx.fillStyle = rank.color;
-  ctx.font = 'bold 28px -apple-system, sans-serif';
-  y = H - 160;
-  ctx.fillText('豆包都收费了，你是什么段位？', W / 2, y);
-
-  // 二维码占位 / 底部装饰
-  ctx.fillStyle = '#999';
-  ctx.font = '20px -apple-system, sans-serif';
-  ctx.fillText('扫码测试你的AI段位', W / 2, H - 80);
-
-  // 边框
-  ctx.strokeStyle = rank.color;
-  ctx.lineWidth = 4;
-  ctx.strokeRect(20, 20, W - 40, H - 40);
-
-  ctx.strokeStyle = rank.color;
-  ctx.lineWidth = 1;
-  ctx.strokeRect(30, 30, W - 60, H - 60);
-}
-
-function wrapText(ctx, text, maxWidth) {
-  const chars = text.split('');
-  const lines = [];
-  let current = '';
-  chars.forEach(ch => {
-    const test = current + ch;
-    if (ctx.measureText(test).width > maxWidth && current) {
-      lines.push(current);
-      current = ch;
-    } else {
-      current = test;
-    }
-  });
-  if (current) lines.push(current);
-  return lines;
-}
-
-// ── 保存图片 ──
-function saveImage() {
-  const canvas = document.getElementById('rank-canvas');
-  const link = document.createElement('a');
-  link.download = `Ay100_段位卡_${Date.now()}.png`;
-  link.href = canvas.toDataURL('image/png');
-  link.click();
-}
-
-// ── 分享链接 ──
-function shareLink() {
-  const url = window.location.href;
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(url).then(() => showToast('链接已复制到剪贴板，快去分享吧！'));
-  } else {
-    const ta = document.createElement('textarea');
-    ta.value = url;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    showToast('链接已复制到剪贴板，快去分享吧！');
-  }
-}
-
-// ── Starfilm ──
-function starfilm() {
-  // 预留 href 占位
-  const rank = getRank();
-  const ref = isBonus && bonusScore >= 10 ? 'ay100_diamond' : 'ay100_platinum';
-  const url = `https://starfilm.hengxingai.com/starlight?ref=${ref}&rank=${encodeURIComponent(rank.name)}`;
-  window.open(url, '_blank');
-}
-
-// ── Toast ──
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
-}
 </script>
 </body>
 </html>
