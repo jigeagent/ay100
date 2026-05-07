@@ -2687,7 +2687,7 @@ const CastingApp = {
     // Mechanism 1: Conflict Arbitration Rules
     soulContent += "---\n\n## 机制一:冲突仲裁规则\n\n";
     soulContent += `当四个来源给出冲突信号时,按以下优先级裁决:\n\n`;
-    soulContent += ```;
+    soulContent += '\\\';
     soulContent += `最高:身份契约(写在 SOUL 中的声明)\n`;
     soulContent += ` ↓\n`;
     soulContent += `中上:价值观注入(≥3次确认的交互种子)\n`;
@@ -2695,7 +2695,7 @@ const CastingApp = {
     soulContent += `中下:信任递进(长期关系形成的行为模式)\n`;
     soulContent += ` ↓\n`;
     soulContent += `最低:任务校准(单次任务的反馈信号)\n`;
-    soulContent += ```;
+    soulContent += '\\\';
 
     soulContent += `**仲裁原则**:\n`;
     soulContent += `- 单次任务反馈不能覆盖长期身份契约\n`;
@@ -2906,3 +2906,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
