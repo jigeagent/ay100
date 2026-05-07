@@ -1889,13 +1889,13 @@ const CastingApp = {
   },
 
   goToStep(stepNumber) {
+    // Save current step data before validating
+    this.saveCurrentStepData();
+
     // Validate current step before navigating
     if (!this.validateCurrentStep()) {
       return; // Don't navigate if validation fails
     }
-
-    // Save current step data before navigating
-    this.saveCurrentStepData();
 
     // Hide all pages
     document.querySelectorAll('.page').forEach(p => {
@@ -2906,5 +2906,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
