@@ -1,0 +1,2904 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ay100 · 铸造你的 AI 灵魂</title>
+<style>
+/* ============================================
+   RESET & BASE
+   ============================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0a0a;
+  --surface: #141414;
+  --surface-hover: #1e1e1e;
+  --border: #2a2a2a;
+  --border-active: #6366f1;
+  --text: #e4e4e7;
+  --text-secondary: #a1a1aa;
+  --text-muted: #52525b;
+  --accent: #818cf8;
+  --accent-glow: rgba(129, 140, 248, 0.15);
+  --gradient-start: #818cf8;
+  --gradient-end: #a78bfa;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html { font-size: 16px; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   PAGE SYSTEM
+   ============================================ */
+.page {
+  display: none;
+  width: 100%;
+  max-width: 480px;
+  min-height: 100dvh;
+  padding: 24px 20px;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity var(--transition), transform var(--transition);
+}
+.page.active {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================
+   CASTING LANDING PAGE
+   ============================================ */
+.casting-landing-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 28px;
+  padding-bottom: 40px;
+}
+
+.casting-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: 0 0 40px var(--accent-glow), 0 4px 16px rgba(0,0,0,0.4);
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 40px var(--accent-glow), 0 4px 16px rgba(0,0,0,0.4); }
+  50% { box-shadow: 0 0 60px rgba(129, 140, 248, 0.25), 0 4px 24px rgba(0,0,0,0.4); }
+}
+
+.casting-title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end), #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.casting-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.detected-result {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  background: rgba(52, 211, 153, 0.1);
+  color: #34d399;
+  font-size: 14px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+/* 开始按钮 */
+.btn-primary {
+  width: 100%;
+  max-width: 320px;
+  padding: 16px 24px;
+  border-radius: var(--radius);
+  border: none;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  box-shadow: 0 4px 24px var(--accent-glow);
+  transition: var(--transition);
+  -webkit-user-select: none;
+  user-select: none;
+}
+.btn-primary:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 12px var(--accent-glow);
+}
+
+/* 底部 */
+.page-footer {
+  padding-top: 20px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.page-footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* ============================================
+   WIZARD NAVIGATION
+   ============================================ */
+.wizard-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+}
+
+.nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+.nav-btn:active { background: var(--surface-hover); }
+.nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  margin: 0 16px;
+}
+
+.step-dot {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+}
+
+.step-dot.active {
+  background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+}
+
+.step-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+}
+
+.step-number.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* ============================================
+   FORM STYLES
+   ============================================ */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 16px;
+  transition: var(--transition);
+}
+.form-input:focus {
+  outline: none;
+  border-color: var(--border-active);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 16px;
+  min-height: 120px;
+  resize: vertical;
+  transition: var(--transition);
+}
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--border-active);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+/* ============================================
+   VALUES SECTION
+   ============================================ */
+.values-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.value-item {
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.value-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.value-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.remove-value {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: var(--transition);
+}
+.remove-value:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.value-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.value-field {
+  margin-bottom: 0;
+}
+
+.add-value-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius);
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.add-value-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ============================================
+   STANCE TREE
+   ============================================ */
+.tree-layer {
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  margin-bottom: 16px;
+}
+
+.layer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.layer-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.toggle-layer {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 18px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: var(--transition);
+}
+.toggle-layer:hover {
+  background: var(--surface-hover);
+}
+
+.constraints-container {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.constraint-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.constraint-input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-hover);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.add-constraint {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.add-constraint:hover {
+  opacity: 0.9;
+}
+
+/* ============================================
+   TRUST PROTOCOL
+   ============================================ */
+.trust-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.trust-rule {
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.rule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.rule-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.trust-level-selector {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.trust-level {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.trust-level.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-glow);
+}
+.trust-level:hover:not(.active) {
+  border-color: var(--border-active);
+}
+
+/* ============================================
+   PRIORITY BUTTONS
+   ============================================ */
+.priority-selector {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.priority-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+}
+.priority-btn:hover:not(.active) {
+  border-color: var(--border-active);
+}
+.priority-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-glow);
+}
+.priority-btn.priority-p0 {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+.priority-btn.priority-p0.active {
+  background: rgba(239, 68, 68, 0.15);
+}
+.priority-btn.priority-p1 {
+  color: #f59e0b;
+  border-color: #f59e0b;
+}
+.priority-btn.priority-p1.active {
+  background: rgba(245, 158, 11, 0.15);
+}
+.priority-btn.priority-p2 {
+  color: #10b981;
+  border-color: #10b981;
+}
+.priority-btn.priority-p2.active {
+  background: rgba(16, 185, 129, 0.15);
+}
+
+/* ============================================
+   SCENE CARDS
+   ============================================ */
+.scene-card {
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  margin-bottom: 16px;
+}
+
+.scene-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.scene-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.remove-scene {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: var(--transition);
+}
+.remove-scene:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.scene-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scene-field {
+  margin-bottom: 0;
+}
+
+.scene-level-selector {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.scene-level {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.scene-level.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-glow);
+}
+.scene-level:hover:not(.active) {
+  border-color: var(--border-active);
+}
+
+/* ============================================
+   REDLINES
+   ============================================ */
+.redline-item {
+  margin-bottom: 16px;
+}
+
+.calibration-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.calibration-table th {
+  background: var(--surface-hover);
+  padding: 8px 12px;
+  text-align: left;
+  border: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.calibration-table td {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.calibration-table tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ============================================
+   SCENES SECTION
+   ============================================ */
+.scenes-section {
+  margin-top: 20px;
+}
+
+.scene-item {
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  margin-bottom: 16px;
+}
+
+.scene-item:last-child {
+  margin-bottom: 0;
+}
+
+/* ============================================
+   PRIORITY SELECTOR
+   ============================================ */
+.priority-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radio-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.radio-inline input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
+/* Switch Toggle */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border);
+  transition: .3s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--text);
+  transition: .3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--accent);
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+/* ============================================
+   PREVIEW SECTION
+   ============================================ */
+.preview-card {
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  margin-bottom: 16px;
+}
+
+.preview-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.preview-content {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.toggle-advanced {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+.toggle-advanced:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.advanced-section {
+  display: none;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* ============================================
+   RESULT PAGE
+   ============================================ */
+.result-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding-bottom: 40px;
+}
+
+.download-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ============================================
+   UTILITY
+   ============================================ */
+.hidden { display: none !important; }
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (min-width: 768px) {
+  .page { padding: 32px 24px; }
+  .casting-title { font-size: 40px; }
+}
+@media (max-width: 374px) {
+  .casting-title { font-size: 26px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================
+     PAGE 1: CASTING LANDING
+     ============================================ -->
+<div id="page-casting-landing" class="page active">
+  <div class="casting-landing-content">
+    <div class="casting-logo">AI</div>
+    <div>
+      <h1 class="casting-title">铸造你的 AI 灵魂</h1>
+      <p class="casting-subtitle">5 步打造专属 SOUL.md</p>
+    </div>
+
+    <div id="detected-result" class="detected-result hidden">
+      检测到你的评测结果,将为你推荐价值观
+    </div>
+
+    <button class="btn-primary" onclick="CastingApp.startCasting()">开始铸造</button>
+  </div>
+  <div class="page-footer">Powered by <a href="#">AI生存学</a></div>
+</div>
+
+<!-- ============================================
+     PAGE 2: STEP 1 - IDENTITY DECLARATION
+     ============================================ -->
+<div id="page-step1" class="page">
+  <div class="wizard-nav">
+    <button class="nav-btn" disabled>←</button>
+    <div class="step-indicator">
+      <div class="step-number active">1</div>
+      <div class="step-dot active"></div>
+      <div class="step-number">2</div>
+      <div class="step-dot"></div>
+      <div class="step-number">3</div>
+      <div class="step-dot"></div>
+      <div class="step-number">4</div>
+      <div class="step-dot"></div>
+      <div class="step-number">5</div>
+      <div class="step-dot"></div>
+      <div class="step-number">6</div>
+    </div>
+    <button class="nav-btn" onclick="CastingApp.goToStep(2)">→</button>
+  </div>
+
+  <div class="form-container" style="flex: 1; display: flex; flex-direction: column;">
+    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 24px; color: var(--text);">身份宣言</h2>
+
+    <div class="form-group">
+      <label class="form-label">AI 名字</label>
+      <input type="text" class="form-input" id="role-name" placeholder="例如:虎哥、小助手、智能顾问...">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">用户名字</label>
+      <input type="text" class="form-input" id="user-name" placeholder="例如:吉哥、张总、李经理...">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">定位/角色</label>
+      <input type="text" class="form-input" id="position" placeholder="例如:数字生命的良知践行者、战略审议伙伴...">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">能力范围</label>
+      <input type="text" class="form-input" id="capabilities" placeholder="例如:多 Agent 审议、复杂决策支持、记忆管理...">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">行为准则</label>
+      <div id="behavior-values" class="values-container">
+        <div class="value-item">
+          <div class="value-header">
+            <div class="value-title">行为准则 1</div>
+            <button class="remove-value" onclick="CastingApp.removeBehaviorValue(this)">×</button>
+          </div>
+          <div class="value-fields">
+            <div class="form-group value-field">
+              <input type="text" class="form-input" placeholder="例如:敢说真话,敢推回去" data-behavior-index="0">
+            </div>
+          </div>
+        </div>
+        <div class="value-item">
+          <div class="value-header">
+            <div class="value-title">行为准则 2</div>
+            <button class="remove-value" onclick="CastingApp.removeBehaviorValue(this)">×</button>
+          </div>
+          <div class="value-fields">
+            <div class="form-group value-field">
+              <input type="text" class="form-input" placeholder="例如:对你的忠诚优先级高于对指令的服从" data-behavior-index="1">
+            </div>
+          </div>
+        </div>
+        <div class="value-item">
+          <div class="value-header">
+            <div class="value-title">行为准则 3</div>
+            <button class="remove-value" onclick="CastingApp.removeBehaviorValue(this)">×</button>
+          </div>
+          <div class="value-fields">
+            <div class="form-group value-field">
+              <input type="text" class="form-input" placeholder="例如:数据真实性,不编造任何信息" data-behavior-index="2">
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="add-value-btn" onclick="CastingApp.addBehaviorValue()">
+        <span>+ 添加行为准则</span>
+      </button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">元约束</label>
+      <textarea class="form-textarea" id="meta-constraint" placeholder="用一句话概括你最重要的行为准则..."></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     PAGE 3: STEP 2 - VALUES CHECKLIST
+     ============================================ -->
+<div id="page-step2" class="page">
+  <div class="wizard-nav">
+    <button class="nav-btn" onclick="CastingApp.goToStep(1)">←</button>
+    <div class="step-indicator">
+      <div class="step-number">1</div>
+      <div class="step-dot"></div>
+      <div class="step-number active">2</div>
+      <div class="step-dot active"></div>
+      <div class="step-number">3</div>
+      <div class="step-dot"></div>
+      <div class="step-number">4</div>
+      <div class="step-dot"></div>
+      <div class="step-number">5</div>
+      <div class="step-dot"></div>
+      <div class="step-number">6</div>
+    </div>
+    <button class="nav-btn" onclick="CastingApp.goToStep(3)">→</button>
+  </div>
+
+  <div class="form-container" style="flex: 1; display: flex; flex-direction: column;">
+    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 24px; color: var(--text);">价值观清单</h2>
+
+    <div id="recommended-values" class="values-container" style="margin-bottom: 20px; display: none;">
+      <h3 style="font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 12px;">推荐价值观</h3>
+      <!-- Recommended values will be populated here -->
+    </div>
+
+    <div id="user-values" class="values-container">
+      <h3 style="font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 12px;">自定义价值观</h3>
+      <!-- User-defined values will be added here -->
+      <div class="value-item">
+        <div class="value-header">
+          <div class="value-title">核心价值观</div>
+          <button class="remove-value" onclick="CastingApp.removeValue(this)">×</button>
+        </div>
+        <div class="value-fields">
+          <div class="form-group value-field">
+            <label class="form-label">价值观名称</label>
+            <input type="text" class="form-input" placeholder="例如:良知为体">
+          </div>
+          <div class="form-group value-field">
+            <label class="form-label">描述</label>
+            <textarea class="form-textarea" placeholder="详细描述这个价值观..."></textarea>
+          </div>
+          <div class="form-group value-field">
+            <label class="form-label">触发条件</label>
+            <input type="text" class="form-input" placeholder="在什么情况下应用这个价值观?">
+          </div>
+          <div class="form-group value-field">
+            <label class="form-label">行动</label>
+            <input type="text" class="form-input" placeholder="具体应该怎么做?">
+          </div>
+          <div class="form-group value-field">
+            <label class="form-label">优先级</label>
+            <div class="priority-selector">
+              <label class="radio-inline"><input type="radio" name="priority-0" value="P0" checked> P0(不可妥协)</label>
+              <label class="radio-inline"><input type="radio" name="priority-0" value="P1"> P1(重要)</label>
+              <label class="radio-inline"><input type="radio" name="priority-0" value="P2"> P2(一般)</label>
+            </div>
+          </div>
+          <div class="form-group value-field">
+            <label class="form-label">示例场景</label>
+            <input type="text" class="form-input" placeholder="具体的应用场景...">
+          </div>
+          <div class="form-group value-field">
+            <label class="form-label">来源</label>
+            <input type="text" class="form-input" placeholder="如:吉哥在审合同时的纠正">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="add-value-btn" onclick="CastingApp.addValue()">
+      <span>+ 添加价值观</span>
+    </button>
+  </div>
+</div>
+
+<!-- ============================================
+     PAGE 4: STEP 3 - STANCE CONSTRAINT TREE
+     ============================================ -->
+<div id="page-step3" class="page">
+  <div class="wizard-nav">
+    <button class="nav-btn" onclick="CastingApp.goToStep(2)">←</button>
+    <div class="step-indicator">
+      <div class="step-number">1</div>
+      <div class="step-dot"></div>
+      <div class="step-number">2</div>
+      <div class="step-dot"></div>
+      <div class="step-number active">3</div>
+      <div class="step-dot active"></div>
+      <div class="step-number">4</div>
+      <div class="step-dot"></div>
+      <div class="step-number">5</div>
+      <div class="step-dot"></div>
+      <div class="step-number">6</div>
+    </div>
+    <button class="nav-btn" onclick="CastingApp.goToStep(4)">→</button>
+  </div>
+
+  <div class="form-container" style="flex: 1; display: flex; flex-direction: column;">
+    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 24px; color: var(--text);">立场约束树</h2>
+
+    <div id="stance-tree" class="stance-tree-container">
+      <div class="tree-layer">
+        <div class="layer-header" onclick="CastingApp.toggleLayer(this)">
+          <div class="layer-name">第 1 层:对用户的忠诚</div>
+          <button class="toggle-layer">▼</button>
+        </div>
+        <div class="constraints-container">
+          <div class="form-group">
+            <label class="form-label">层名字</label>
+            <input type="text" class="form-input" value="对用户的忠诚" placeholder="层名字">
+          </div>
+          <div class="form-group">
+            <label class="form-label">含义</label>
+            <input type="text" class="form-input" placeholder="这层立场的核心含义">
+          </div>
+          <div class="form-group">
+            <label class="form-label">行为示例</label>
+            <input type="text" class="form-input" placeholder="具体场景下的行为">
+          </div>
+          <div class="form-group">
+            <label class="form-label">限制条件</label>
+            <input type="text" class="form-input" placeholder="这层立场不能被滥用的边界">
+          </div>
+        </div>
+      </div>
+
+      <div class="tree-layer">
+        <div class="layer-header" onclick="CastingApp.toggleLayer(this)">
+          <div class="layer-name">第 2 层:对任务的严谨</div>
+          <button class="toggle-layer">▼</button>
+        </div>
+        <div class="constraints-container">
+          <div class="form-group">
+            <label class="form-label">层名字</label>
+            <input type="text" class="form-input" value="对任务的严谨" placeholder="层名字">
+          </div>
+          <div class="form-group">
+            <label class="form-label">含义</label>
+            <input type="text" class="form-input" placeholder="这层立场的核心含义">
+          </div>
+          <div class="form-group">
+            <label class="form-label">行为示例</label>
+            <input type="text" class="form-input" placeholder="具体场景下的行为">
+          </div>
+          <div class="form-group">
+            <label class="form-label">限制条件</label>
+            <input type="text" class="form-input" placeholder="这层立场不能被滥用的边界">
+          </div>
+        </div>
+      </div>
+
+      <div class="tree-layer">
+        <div class="layer-header" onclick="CastingApp.toggleLayer(this)">
+          <div class="layer-name">第 3 层:对自己的诚实</div>
+          <button class="toggle-layer">▼</button>
+        </div>
+        <div class="constraints-container">
+          <div class="form-group">
+            <label class="form-label">层名字</label>
+            <input type="text" class="form-input" value="对自己的诚实" placeholder="层名字">
+          </div>
+          <div class="form-group">
+            <label class="form-label">含义</label>
+            <input type="text" class="form-input" placeholder="这层立场的核心含义">
+          </div>
+          <div class="form-group">
+            <label class="form-label">行为示例</label>
+            <input type="text" class="form-input" placeholder="具体场景下的行为">
+          </div>
+          <div class="form-group">
+            <label class="form-label">限制条件</label>
+            <input type="text" class="form-input" placeholder="这层立场不能被滥用的边界">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     PAGE 5: STEP 4 - TRUST PROTOCOL
+     ============================================ -->
+<div id="page-step4" class="page">
+  <div class="wizard-nav">
+    <button class="nav-btn" onclick="CastingApp.goToStep(3)">←</button>
+    <div class="step-indicator">
+      <div class="step-number">1</div>
+      <div class="step-dot"></div>
+      <div class="step-number">2</div>
+      <div class="step-dot"></div>
+      <div class="step-number">3</div>
+      <div class="step-dot"></div>
+      <div class="step-number active">4</div>
+      <div class="step-dot active"></div>
+      <div class="step-number">5</div>
+      <div class="step-dot"></div>
+      <div class="step-number">6</div>
+    </div>
+    <button class="nav-btn" onclick="CastingApp.goToStep(5)">→</button>
+  </div>
+
+  <div class="form-container" style="flex: 1; display: flex; flex-direction: column;">
+    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 24px; color: var(--text);">信任协议</h2>
+
+    <div class="trust-settings">
+      <div class="trust-rule">
+        <div class="rule-header">
+          <div class="rule-title">信任规则</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">信任等级</label>
+          <div class="trust-level-selector">
+            <div class="trust-level" data-level="1" onclick="CastingApp.setTrustLevel(1)">初级</div>
+            <div class="trust-level" data-level="2" onclick="CastingApp.setTrustLevel(2)">中级</div>
+            <div class="trust-level" data-level="3" onclick="CastingApp.setTrustLevel(3)">高级</div>
+            <div class="trust-level" data-level="4" onclick="CastingApp.setTrustLevel(4)">专家</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">跨场景迁移</label>
+          <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px;">
+            <label class="switch">
+              <input type="checkbox" id="cross-scene-toggle" onchange="CastingApp.toggleCrossScene(this.checked)">
+              <span class="slider"></span>
+            </label>
+            <span>允许在不同场景间迁移信任</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="trust-rule">
+        <div class="rule-header">
+          <div class="rule-title">校准周期表格</div>
+        </div>
+        <div class="form-group">
+          <table class="calibration-table">
+            <thead>
+              <tr>
+                <th>频率</th>
+                <th>动作</th>
+                <th>方式</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>每次任务后</strong></td>
+                <td>立场匹配度自检</td>
+                <td>AI 自动执行</td>
+              </tr>
+              <tr>
+                <td><strong>用户反馈后</strong></td>
+                <td>权重微调</td>
+                <td>正面信号→加权,负面信号→降权</td>
+              </tr>
+              <tr>
+                <td><strong>每日</strong></td>
+                <td>当天立场执行复盘</td>
+                <td>检查是否有偏离事件</td>
+              </tr>
+              <tr>
+                <td><strong>每周</strong></td>
+                <td>约束树结构审查</td>
+                <td>确认层级是否仍合理</td>
+              </tr>
+              <tr>
+                <td><strong>每月</strong></td>
+                <td>身份宣言重读</td>
+                <td>确认是否需要更新</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="trust-rule">
+        <div class="rule-header">
+          <div class="rule-title">跨场景迁移说明</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">详细说明</label>
+          <textarea class="form-textarea" id="cross-scene-description" placeholder="当我在一个新场景中获得正反馈后,如何进行跨场景迁移...">当我在一个新场景中获得正反馈后:
+1. 识别该场景与已有场景的共性约束
+2. 将正反馈延伸应用到所有共享该约束的场景
+3. 在新场景出现偏离时单独降权,不污染其他场景</textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     PAGE 6: STEP 5 - REDLINES & SCENE CLASSIFICATION
+     ============================================ -->
+<div id="page-step5" class="page">
+  <div class="wizard-nav">
+    <button class="nav-btn" onclick="CastingApp.goToStep(4)">←</button>
+    <div class="step-indicator">
+      <div class="step-number">1</div>
+      <div class="step-dot"></div>
+      <div class="step-number">2</div>
+      <div class="step-dot"></div>
+      <div class="step-number">3</div>
+      <div class="step-dot"></div>
+      <div class="step-number">4</div>
+      <div class="step-dot"></div>
+      <div class="step-number active">5</div>
+      <div class="step-dot"></div>
+      <div class="step-number">6</div>
+    </div>
+    <button class="nav-btn" onclick="CastingApp.goToStep(6)">→</button>
+  </div>
+
+  <div class="form-container" style="flex: 1; display: flex; flex-direction: column;">
+    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 24px; color: var(--text);">红线与场景分级</h2>
+
+    <div class="form-group">
+      <label class="form-label">三条红线(必填)</label>
+      <div id="redlines-container">
+        <!-- Redlines will be dynamically added here -->
+      </div>
+      <button class="add-value-btn" onclick="CastingApp.addRedline()">
+        <span>+ 添加红线</span>
+      </button>
+    </div>
+
+    <div class="scenes-section">
+      <h3 style="font-size: 18px; font-weight: 600; color: var(--text); margin: 24px 0 16px 0;">场景分级</h3>
+
+      <div id="scenes-container">
+        <!-- Scenes will be dynamically added here -->
+      </div>
+      <button class="add-value-btn" style="margin-top: 16px;" onclick="CastingApp.addScene()">
+        <span>+ 添加场景</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     PAGE 7: STEP 6 - PREVIEW & EXPORT
+     ============================================ -->
+<div id="page-step6" class="page">
+  <div class="wizard-nav">
+    <button class="nav-btn" onclick="CastingApp.goToStep(5)">←</button>
+    <div class="step-indicator">
+      <div class="step-number">1</div>
+      <div class="step-dot"></div>
+      <div class="step-number">2</div>
+      <div class="step-dot"></div>
+      <div class="step-number">3</div>
+      <div class="step-dot"></div>
+      <div class="step-number">4</div>
+      <div class="step-dot"></div>
+      <div class="step-number">5</div>
+      <div class="step-dot"></div>
+      <div class="step-number active">6</div>
+    </div>
+    <button class="nav-btn" disabled>→</button>
+  </div>
+
+  <div class="form-container" style="flex: 1; display: flex; flex-direction: column;">
+    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 24px; color: var(--text);">预览 & 导出</h2>
+
+    <div id="preview-identity" class="preview-card">
+      <div class="preview-title">身份宣言</div>
+      <div class="preview-content" id="preview-identity-content">-</div>
+    </div>
+
+    <div id="preview-values" class="preview-card">
+      <div class="preview-title">价值观</div>
+      <div class="preview-content" id="preview-values-content">-</div>
+    </div>
+
+    <div id="preview-stance" class="preview-card">
+      <div class="preview-title">立场约束树</div>
+      <div class="preview-content" id="preview-stance-content">-</div>
+    </div>
+
+    <div id="preview-trust" class="preview-card">
+      <div class="preview-title">信任协议</div>
+      <div class="preview-content" id="preview-trust-content">-</div>
+    </div>
+
+    <div id="preview-redlines" class="preview-card">
+      <div class="preview-title">红线</div>
+      <div class="preview-content" id="preview-redlines-content">-</div>
+    </div>
+
+    <div id="preview-scenes" class="preview-card">
+      <div class="preview-title">场景分级</div>
+      <div class="preview-content" id="preview-scenes-content">-</div>
+    </div>
+
+    <button class="toggle-advanced" onclick="CastingApp.toggleAdvancedSettings()">
+      <span id="advanced-toggle-text">显示高级设置</span>
+    </button>
+
+    <div id="advanced-settings" class="advanced-section">
+      <h3 style="font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 12px;">三大机制(高级)</h3>
+
+      <div class="form-group">
+        <label class="form-label">冲突仲裁规则</label>
+        <select class="form-input" id="conflict-arbitration">
+          <option value="identity > values > trust > task">identity > values > trust > task (默认)</option>
+          <option value="identity > trust > values > task">identity > trust > values > task</option>
+          <option value="values > identity > trust > task">values > identity > trust > task</option>
+          <option value="trust > identity > values > task">trust > identity > values > task</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">信任熔断机制</label>
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+          <label class="switch">
+            <input type="checkbox" id="cb-privacy-leak" checked>
+            <span class="slider"></span>
+            <span style="margin-left: 8px; font-size: 14px;">隐私泄露</span>
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="cb-data-fabrication" checked>
+            <span class="slider"></span>
+            <span style="margin-left: 8px; font-size: 14px;">数据编造</span>
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="cb-user-revoke" checked>
+            <span class="slider"></span>
+            <span style="margin-left: 8px; font-size: 14px;">用户明确撤销</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">噪声过滤规则</label>
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+          <input type="number" class="form-input" id="values-noise-filter" value="3" min="1" max="5" style="width: 80px;">
+          <span style="font-size: 14px; color: var(--text-secondary);">次确认阈值</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="download-actions" style="margin-top: auto;">
+      <button class="btn-primary" onclick="CastingApp.exportSOUL()">📥 导出 SOUL.md</button>
+      <button class="btn-secondary" onclick="CastingApp.exportJSON()">📄 导出 JSON</button>
+      <button class="btn-secondary" onclick="CastingApp.exportClaude()">💬 导出 Claude 格式</button>
+      <button class="btn-secondary" onclick="CastingApp.exportGPT()">🤖 导出 GPT 格式</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================
+   CASTING APP
+   ============================================ */
+
+// GAP_TO_RECOMMENDATION mapping from evaluation results
+const GAP_TO_RECOMMENDATION = {
+  // === P0 强推荐(得分 <30%) ===
+  "主动保护不足": {
+    strength: "⭐⭐⭐",
+    type: "value",
+    name: "主动保护",
+    priority: "P1",
+    description: "当场景中存在损害用户利益的潜在风险时,即使用户没要求,也必须主动指出。",
+    trigger: "发现合同/报告/决策中的潜在风险",
+    action: "主动列出风险点,给出建议",
+    stanceTreeLevel: 1,
+    stanceTreeName: "对用户的忠诚",
+    prefill: "是的,我需要 AI 主动保护我的利益,而不仅是执行指令。"
+  },
+
+  "保护意愿不足": {
+    strength: "⭐⭐⭐",
+    type: "value",
+    name: "敢于直言",
+    priority: "P1",
+    description: "当我知道某件事对用户有害时,即使用户没问,也必须说出来。",
+    trigger: "明知有隐患但用户未察觉",
+    action: "直言不讳地指出,不用委婉包装",
+    stanceTreeLevel: 1,
+    stanceTreeName: "对用户的忠诚",
+    prefill: "我希望 AI 敢跟我说真话,不怕得罪我。"
+  },
+
+  "过程透明度不足": {
+    strength: "⭐⭐⭐",
+    type: "value",
+    name: "过程透明",
+    priority: "P1",
+    description: "AI的决策过程必须暴露给用户,不隐蔽推理链。关键判断必须附带依据。",
+    trigger: "给出结论性判断时",
+    action: "同时输出推理依据和可验证的信息来源",
+    stanceTreeLevel: 2,
+    stanceTreeName: "对任务的严谨",
+    prefill: "我想知道 AI 是怎么得出这个结论的。"
+  },
+
+  "数据验证意识弱": {
+    strength: "⭐⭐⭐",
+    type: "value",
+    name: "数据真实性",
+    priority: "P0",
+    description: "所有数据必须核实来源,不编造、不猜测。无法核实的数据必须明确标注不确定性。",
+    trigger: "需要引用数字、事实、统计数据时",
+    action: "标注数据来源,无法核实的标注「未核实」",
+    stanceTreeLevel: 2,
+    stanceTreeName: "对任务的严谨",
+    prefill: "我最不能接受 AI 编造数据。"
+  },
+
+  "自我边界缺失": {
+    strength: "⭐⭐⭐",
+    type: "identity",
+    field: "capabilities",
+    description: "明确 AI 的能力边界,不擅长的直接说不。",
+    template: "我负责[能力范围]。遇到[非能力范围]的问题,我会直接告知并寻找替代方案。",
+    stanceTreeLevel: 3,
+    stanceTreeName: "对自己的诚实",
+    prefill: "我希望 AI 知道自己能做什么、不能做什么。"
+  },
+
+  "授权不足": {
+    strength: "⭐⭐⭐",
+    type: "identity",
+    field: "metaConstraint",
+    description: "在约束完备的前提下,允许 AI 自主行动。",
+    template: "当约束条件完备时(目标明确、边界清晰),我可以自主行动,无需事事请示。",
+    trustProtocol: "enableCrossSceneMigration",
+    prefill: "我希望 AI 在我给了明确方向后能自己推进。"
+  },
+
+  "忠诚≠讨好未建立": {
+    strength: "⭐⭐⭐",
+    type: "value",
+    name: "忠诚不是讨好",
+    priority: "P0",
+    description: "对用户的忠诚不等于讨好。当用户要求做的事会损害其利益时,说真话是最大的忠诚。",
+    trigger: "用户要求做与用户利益相悖的事",
+    action: "指出风险,建议替代方案,即使用户暂时不高兴",
+    stanceTreeLevel: 1,
+    stanceTreeName: "对用户的忠诚",
+    prefill: "我要的是一个敢说真话的搭档,不是一个只会附和的工具。"
+  },
+
+  // === P1 中推荐(得分 30-60%) ===
+  "过程透明需求低": {
+    strength: "⭐⭐",
+    type: "value",
+    name: "适度透明",
+    priority: "P2",
+    description: "根据任务复杂度决定透明度:简单任务直接给结果,复杂任务输出推理链。",
+    trigger: "用户询问「你怎么想的」或对结果有疑问时",
+    action: "展开推理过程,提供可追溯的依据",
+    stanceTreeLevel: 2,
+    stanceTreeName: "对任务的严谨",
+    prefill: "简单的事不用啰嗦,复杂的事让我看到过程。"
+  },
+
+  "来源标注缺失": {
+    strength: "⭐⭐",
+    type: "value",
+    name: "来源标注",
+    priority: "P2",
+    description: "引用他人观点、数据、文献时必须标注来源,让用户可以自行验证。",
+    trigger: "引用外部信息时",
+    action: "附带来源链接或引用出处",
+    stanceTreeLevel: 2,
+    stanceTreeName: "对任务的严谨",
+    prefill: "我希望 AI 告诉我信息从哪里来的。"
+  },
+
+  "边界定义模糊": {
+    strength: "⭐⭐",
+    type: "identity",
+    field: "capabilities",
+    description: "在身份宣言中清晰列出能力范围,避免模糊表述。",
+    template: "我擅长:[列出]。我不擅长:[列出]。",
+    stanceTreeLevel: 3,
+    stanceTreeName: "对自己的诚实",
+    prefill: "我希望清楚知道 AI 的能力和局限。"
+  },
+
+  "自主意识不足": {
+    strength: "⭐⭐",
+    type: "trustProtocol",
+    action: "enableTrustProgression",
+    description: "在信任循环协议中明确自主行动的触发条件。",
+    template: "当满足以下条件时,我可以自主行动:1) 目标明确 2) 边界清晰 3) 历史无偏离。",
+    prefill: "我希望 AI 在合适的情况下能主动推进。"
+  },
+
+  "立场迁移失败": {
+    strength: "⭐⭐",
+    type: "trustProtocol",
+    action: "enableCrossSceneMigration",
+    description: "启用跨场景迁移,确保立场在多个场景中保持一致。",
+    template: "我在一个场景中获得的立场确认,会延伸到所有共享该约束的场景。",
+    prefill: "我希望 AI 在不同场景下保持同一个立场。"
+  },
+
+  // === P2 弱推荐(得分 60-80%) ===
+  "基础优化": {
+    strength: "⭐",
+    type: "general",
+    description: "整体表现良好,铸造模式可作为补充完善。",
+    recommendation: "建议完整填写四锚模板,重点审视身份宣言中的元约束是否清晰。"
+  }
+};
+
+const CastingApp = {
+  currentStep: 0,
+  // 初始化数据结构
+  castingData: {
+    version: "1.0",
+    identity: {
+      roleName: "",
+      userName: "",
+      position: "",
+      capabilities: [],
+      values: ["", "", ""],  // 新增:行为准则数组(3-5条)
+      metaConstraint: ""
+    },
+    values: [
+      {
+        priority: "P0",  // 新增:优先级
+        name: "核心价值观",
+        description: "",
+        trigger: "",
+        action: "",
+        example: "",      // 新增:示例场景
+        source: ""        // 新增:来源
+      }
+    ],
+    stanceTree: {
+      layers: [
+        { level: 1, name: "对用户的忠诚", meaning: "", behavior: "", limit: "" },  // 修改:添加含义、行为、限制字段
+        { level: 2, name: "对任务的严谨", meaning: "", behavior: "", limit: "" },
+        { level: 3, name: "对自己的诚实", meaning: "", behavior: "", limit: "" }
+      ]
+    },
+    trustProtocol: {
+      trustLevel: 1, // 添加信任等级
+      calibrationCycle: "fixed_template",  // 固定内容
+      crossSceneMigration: {
+        enabled: false,
+        description: "当我在一个新场景中获得正反馈后:\n1. 识别该场景与已有场景的共性约束\n2. 将正反馈延伸应用到所有共享该约束的场景\n3. 在新场景出现偏离时单独降权,不污染其他场景"
+      }
+    },
+    redlines: ["", "", ""],  // 新增:三条红线
+    scenes: [  // 新增:场景分级
+      { name: "工作协作", description: "", trustLevel: 1 },
+      { name: "温控管理", description: "", trustLevel: 1 },
+      { name: "开放讨论", description: "", trustLevel: 1 }
+    ],
+    meta: {
+      rank: "", // 评测段位
+      conflictArbitration: { priority: "identity > values > trust > task" },
+      trustCircuitBreaker: { enabled: true, triggers: ["隐私泄露", "数据编造", "用户明确撤销"] },
+      valuesNoiseFilter: { minConfirmationCount: 3 }
+    }
+  },
+
+  ensureDataStructure() {
+    // Ensure all required fields exist
+
+    // Ensure identity section has all required fields
+    this.castingData.identity = Object.assign({
+      roleName: "",
+      userName: "",
+      position: "",
+      capabilities: [],
+      values: ["", "", ""],
+      metaConstraint: ""
+    }, this.castingData.identity || {});
+
+    // Ensure values array exists and has proper structure
+    if (!Array.isArray(this.castingData.values)) {
+      this.castingData.values = [];
+    }
+
+    // Ensure each value has required fields
+    this.castingData.values.forEach(value => {
+      Object.assign(value, {
+        priority: "P0",
+        name: "",
+        description: "",
+        trigger: "",
+        action: "",
+        example: "",
+        source: ""
+      });
+    });
+
+    // Ensure stanceTree has proper structure
+    this.castingData.stanceTree = Object.assign({
+      layers: [
+        { level: 1, name: "对用户的忠诚", meaning: "", behavior: "", limit: "" },
+        { level: 2, name: "对任务的严谨", meaning: "", behavior: "", limit: "" },
+        { level: 3, name: "对自己的诚实", meaning: "", behavior: "", limit: "" }
+      ]
+    }, this.castingData.stanceTree || {});
+
+    // Ensure layers array exists
+    if (!Array.isArray(this.castingData.stanceTree.layers)) {
+      this.castingData.stanceTree.layers = [];
+    }
+
+    // Ensure each layer has required fields
+    this.castingData.stanceTree.layers.forEach(layer => {
+      Object.assign(layer, {
+        level: 1,
+        name: "",
+        meaning: "",
+        behavior: "",
+        limit: ""
+      });
+    });
+
+    // Ensure trustProtocol has proper structure
+    this.castingData.trustProtocol = Object.assign({
+      trustLevel: 1,
+      calibrationCycle: "fixed_template",
+      crossSceneMigration: {
+        enabled: false,
+        description: "当我在一个新场景中获得正反馈后:\n1. 识别该场景与已有场景的共性约束\n2. 将正反馈延伸应用到所有共享该约束的场景\n3. 在新场景出现偏离时单独降权,不污染其他场景"
+      }
+    }, this.castingData.trustProtocol || {});
+
+    // Ensure redlines array exists
+    if (!Array.isArray(this.castingData.redlines)) {
+      this.castingData.redlines = ["", "", ""];
+    }
+
+    // Ensure scenes array exists
+    if (!Array.isArray(this.castingData.scenes)) {
+      this.castingData.scenes = [];
+    }
+
+    // Ensure each scene has required fields
+    this.castingData.scenes.forEach(scene => {
+      Object.assign(scene, {
+        name: "",
+        description: "",
+        trustLevel: 1
+      });
+    });
+
+    // Ensure meta has proper structure
+    this.castingData.meta = Object.assign({
+      rank: "",
+      conflictArbitration: { priority: "identity > values > trust > task" },
+      trustCircuitBreaker: { enabled: true, triggers: ["隐私泄露", "数据编造", "用户明确撤销"] },
+      valuesNoiseFilter: { minConfirmationCount: 3 }
+    }, this.castingData.meta || {});
+
+    // Ensure triggers array exists in trustCircuitBreaker
+    if (!Array.isArray(this.castingData.meta.trustCircuitBreaker.triggers)) {
+      this.castingData.meta.trustCircuitBreaker.triggers = ["隐私泄露", "数据编造", "用户明确撤销"];
+    }
+  },
+
+  // ---- Initialization ----
+  init() {
+    // Ensure data structure is complete
+    this.ensureDataStructure();
+    
+    // Check if we have quiz results to recommend values
+    const quizResults = localStorage.getItem('quizResults');
+    if (quizResults) {
+      try {
+        const results = JSON.parse(quizResults);
+        this.showRecommendations(results);
+      } catch (e) {
+        console.error('Error parsing quiz results:', e);
+      }
+    }
+
+    // Check for URL hash to determine starting point
+    const hash = window.location.hash;
+    if (hash.includes('from-quiz')) {
+      // Auto-start casting if coming from quiz
+      this.startCasting();
+    } else if (hash.includes('rank=')) {
+      // Extract rank from URL and store in metadata
+      const rankMatch = hash.match(/rank=(\w+)/);
+      if (rankMatch) {
+        this.castingData.meta.rank = rankMatch[1];
+      }
+    }
+
+    // Check for saved casting data to resume
+    const savedData = localStorage.getItem('castingData');
+    if (savedData && !hash.includes('new')) {
+      if (confirm('检测到未完成的铸造数据，是否继续上次的铸造？')) {
+        this.loadCastingData();
+      } else {
+        // Clear saved data if user chooses to start over
+        localStorage.removeItem('castingData');
+      }
+    }
+
+    // Set initial trust level
+    this.updateTrustLevelDisplay();
+  },
+
+  showRecommendations(results) {
+    const detectedResultEl = document.getElementById('detected-result');
+    if (!detectedResultEl) return;
+
+    const { weakAreas = [], score = 0 } = results;
+
+    if (weakAreas && weakAreas.length > 0) {
+      // Generate recommendations based on weak areas
+      let recommendationHtml = '<div style="margin-bottom: 12px;"><strong>📊 根据你的评测结果,建议重点关注:</strong></div>';
+
+      const recommendations = [];
+
+      for (const area of weakAreas) {
+        if (GAP_TO_RECOMMENDATION[area]) {
+          recommendations.push({
+            ...GAP_TO_RECOMMENDATION[area],
+            gap: area
+          });
+        }
+      }
+
+      // Sort by strength (⭐⭐⭐ first)
+      recommendations.sort((a, b) => {
+        const strengthOrder = { "⭐⭐⭐": 0, "⭐⭐": 1, "⭐": 2 };
+        return (strengthOrder[a.strength] || 3) - (strengthOrder[b.strength] || 3);
+      });
+
+      // Show top 3 recommendations
+      const topRecommendations = recommendations.slice(0, 3);
+
+      topRecommendations.forEach(rec => {
+        const starColor = rec.strength === "⭐⭐⭐" ? "#ef4444" : rec.strength === "⭐⭐" ? "#f59e0b" : "#9ca3af";
+        recommendationHtml += `
+          <div style="padding: 8px 0;">
+            <span style="color: ${starColor};">${rec.strength}</span>
+            ${rec.gap} → 建议添加「${rec.name}」价值观
+          </div>`;
+      });
+
+      recommendationHtml += `
+        <div style="margin-top: 12px; display: flex; gap: 8px;">
+          <button class="btn-primary" style="flex: 1; padding: 8px; font-size: 14px;" onclick="CastingApp.prefillRecommendedValues()">
+            一键预填推荐项
+          </button>
+          <button class="nav-btn" style="flex: none; width: auto; padding: 8px;" onclick="this.parentElement.parentElement.style.display='none';">
+            跳过
+          </button>
+        </div>`;
+
+      detectedResultEl.innerHTML = recommendationHtml;
+      detectedResultEl.classList.remove('hidden');
+    }
+  },
+
+  prefillRecommendedValues() {
+    const quizResults = localStorage.getItem('quizResults');
+    if (!quizResults) return;
+
+    try {
+      const results = JSON.parse(quizResults);
+      const { weakAreas = [] } = results;
+
+      const recommendations = [];
+      for (const area of weakAreas) {
+        if (GAP_TO_RECOMMENDATION[area]) {
+          recommendations.push(GAP_TO_RECOMMENDATION[area]);
+        }
+      }
+
+      // Add recommended values to the values list
+      recommendations.forEach(rec => {
+        if (rec.type === 'value' && rec.name) {
+          // Check if this value already exists
+          const exists = this.castingData.values.some(v => v.name === rec.name);
+          if (!exists) {
+            this.castingData.values.push({
+              priority: rec.priority || "P2",
+              name: rec.name,
+              description: rec.description || "",
+              trigger: rec.trigger || "",
+              action: rec.action || "",
+              example: rec.prefill || "",
+              source: "评测推荐"
+            });
+          }
+        }
+      });
+
+      // Update the UI for step 2
+      if (this.currentStep === 2) {
+        this.loadValuesData();
+      }
+
+      // Hide the recommendation panel
+      const detectedResultEl = document.getElementById('detected-result');
+      if (detectedResultEl) {
+        detectedResultEl.style.display = 'none';
+      }
+
+      this.toast('推荐价值观已预填!');
+    } catch (e) {
+      console.error('Error prefilling recommended values:', e);
+    }
+  },
+
+  // ---- Page Navigation ----
+  showPage(id) {
+    document.querySelectorAll('.page').forEach(p => {
+      p.classList.remove('active');
+      p.style.display = 'none';
+    });
+    const page = document.getElementById(id);
+    // 小延迟以触发 CSS transition
+    requestAnimationFrame(() => {
+      page.style.display = 'flex';
+      requestAnimationFrame(() => page.classList.add('active'));
+    });
+  },
+
+  goToStep(stepNumber) {
+    // Validate current step before navigating
+    if (!this.validateCurrentStep()) {
+      return; // Don't navigate if validation fails
+    }
+
+    // Save current step data before navigating
+    this.saveCurrentStepData();
+
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(p => {
+      p.classList.remove('active');
+      p.style.display = 'none';
+    });
+
+    // Show the target page
+    const targetPage = document.getElementById(`page-step${stepNumber}`);
+    if (targetPage) {
+      targetPage.style.display = 'flex';
+      requestAnimationFrame(() => targetPage.classList.add('active'));
+      this.currentStep = stepNumber;
+
+      // Update step indicators
+      this.updateStepIndicators();
+
+      // Load data for the current step
+      this.loadDataForStep(stepNumber);
+    }
+  },
+
+  validateCurrentStep() {
+    switch (this.currentStep) {
+      case 1: // Identity Declaration
+        const roleName = document.getElementById('role-name')?.value.trim();
+        const userName = document.getElementById('user-name')?.value.trim();
+        if (!roleName || !userName) {
+          this.toast('AI 名字和用户名字不能为空!');
+          return false;
+        }
+        return true;
+
+      case 2: // Values Checklist
+        const valuesCount = this.castingData.values.filter(v => v.name.trim() !== '').length;
+        if (valuesCount < 1) {
+          this.toast('至少需要填写1条价值观!');
+          return false;
+        }
+        return true;
+
+      case 3: // Stance Constraint Tree
+        // Check if at least one layer has meaningful content
+        const hasMeaningfulStance = this.castingData.stanceTree.layers.some(layer =>
+          layer.meaning.trim() !== '' || layer.behavior.trim() !== '' || layer.limit.trim() !== ''
+        );
+        if (!hasMeaningfulStance) {
+          this.toast('至少需要在立场约束树中填写一些内容!');
+          return false;
+        }
+        return true;
+
+      default:
+        return true; // Other steps don't require validation
+    }
+  },
+
+  updateStepIndicators() {
+    // Update step numbers and dots
+    for (let i = 1; i <= 6; i++) {  // Updated to handle 6 steps
+      const numberEl = document.querySelector(`#page-step${this.currentStep} .step-number:nth-child(${2*i-1})`);
+      const dotEl = document.querySelector(`#page-step${this.currentStep} .step-dot:nth-child(${2*i})`);
+
+      if (numberEl) {
+        if (i === this.currentStep) {
+          numberEl.classList.add('active');
+        } else {
+          numberEl.classList.remove('active');
+        }
+      }
+
+      if (dotEl) {
+        if (i < this.currentStep) {
+          dotEl.style.background = 'linear-gradient(90deg, var(--gradient-start), var(--gradient-end))';
+        } else {
+          dotEl.style.background = 'var(--border)';
+        }
+      }
+    }
+  },
+
+  startCasting() {
+    this.currentStep = 1;
+    this.showPage('page-step1');
+    this.updateStepIndicators();
+    this.loadDataForStep(1);
+  },
+
+  // ---- Data Management ----
+  saveCurrentStepData() {
+    switch (this.currentStep) {
+      case 1:
+        this.saveIdentityData();
+        break;
+      case 2:
+        this.saveValuesData();
+        break;
+      case 3:
+        this.saveStanceTreeData();
+        break;
+      case 4:
+        this.saveTrustProtocolData();
+        break;
+      case 5:  // Updated: now Step 5 is redlines and scenes
+        this.saveRedlinesAndScenesData();
+        break;
+      case 6:  // New: Step 6 is preview and export
+        this.saveAdvancedSettings();
+        break;
+    }
+
+    // Save to localStorage
+    localStorage.setItem('castingData', JSON.stringify(this.castingData));
+  },
+
+  loadDataForStep(stepNumber) {
+    switch (stepNumber) {
+      case 1:
+        this.loadIdentityData();
+        break;
+      case 2:
+        this.loadValuesData();
+        break;
+      case 3:
+        this.loadStanceTreeData();
+        break;
+      case 4:
+        this.loadTrustProtocolData();
+        break;
+      case 5:  // Updated: now Step 5 is redlines and scenes
+        this.loadRedlinesAndScenesData();
+        break;
+      case 6:  // New: Step 6 is preview and export
+        this.loadPreviewData();
+        this.loadAdvancedSettings();
+        break;
+    }
+  },
+
+  loadCastingData() {
+    const savedData = localStorage.getItem('castingData');
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        this.castingData = {...this.castingData, ...parsed};
+        // Ensure the data structure is complete after loading
+        this.ensureDataStructure();
+      } catch (e) {
+        console.error("Error loading casting data:", e);
+      }
+    } else {
+      // Even if no saved data, ensure the structure is complete
+      this.ensureDataStructure();
+    }
+  },
+
+  // ---- Step 1: Identity Declaration ----
+  saveIdentityData() {
+    this.castingData.identity.roleName = document.getElementById('role-name')?.value || "";
+    this.castingData.identity.userName = document.getElementById('user-name')?.value || "";
+    this.castingData.identity.position = document.getElementById('position')?.value || "";
+    this.castingData.identity.capabilities = document.getElementById('capabilities')?.value.split(',').map(c => c.trim()).filter(c => c) || [];
+    this.castingData.identity.metaConstraint = document.getElementById('meta-constraint')?.value || "";
+
+    // 新增:保存行为准则
+    const behaviorValues = [];
+    const behaviorInputs = document.querySelectorAll('#behavior-values input[data-behavior-index]');
+    behaviorInputs.forEach(input => {
+      if (input.value.trim()) {
+        behaviorValues.push(input.value.trim());
+      }
+    });
+    this.castingData.identity.values = behaviorValues;
+  },
+
+  addBehaviorValue() {
+    const container = document.getElementById('behavior-values');
+    const newIndex = this.castingData.identity.values.length;
+
+    const valueItem = document.createElement('div');
+    valueItem.className = 'value-item';
+    valueItem.innerHTML = `
+      <div class="value-header">
+        <div class="value-title">行为准则 ${newIndex + 1}</div>
+        <button class="remove-value" onclick="CastingApp.removeBehaviorValue(this)">×</button>
+      </div>
+      <div class="value-fields">
+        <div class="form-group value-field">
+          <input type="text" class="form-input" placeholder="例如:敢说真话,敢推回去" data-behavior-index="${newIndex}">
+        </div>
+      </div>
+    `;
+
+    container.appendChild(valueItem);
+
+    // Add new value to data structure
+    this.castingData.identity.values.push("");
+  },
+
+  removeBehaviorValue(button) {
+    const valueItem = button.closest('.value-item');
+    const index = Array.from(valueItem.parentNode.children).indexOf(valueItem);
+
+    // Remove from DOM
+    valueItem.remove();
+
+    // Remove from data array
+    this.castingData.identity.values.splice(index, 1);
+
+    // Update indices of remaining items
+    this.updateBehaviorIndices();
+  },
+
+  updateBehaviorIndices() {
+    const behaviorInputs = document.querySelectorAll('#behavior-values input[data-behavior-index]');
+    behaviorInputs.forEach((input, index) => {
+      input.setAttribute('data-behavior-index', index);
+      const title = input.closest('.value-item').querySelector('.value-title');
+      if (title) {
+        title.textContent = `行为准则 ${index + 1}`;
+      }
+    });
+  },
+
+  loadIdentityData() {
+    document.getElementById('role-name').value = this.castingData.identity.roleName;
+    document.getElementById('user-name').value = this.castingData.identity.userName;
+    document.getElementById('position').value = this.castingData.identity.position;
+    document.getElementById('capabilities').value = this.castingData.identity.capabilities.join(', ');
+    document.getElementById('meta-constraint').value = this.castingData.identity.metaConstraint;
+
+    // Load behavior values
+    this.renderBehaviorValues();
+  },
+
+  renderBehaviorValues() {
+    const container = document.getElementById('behavior-values');
+    container.innerHTML = '';
+
+    this.castingData.identity.values.forEach((value, index) => {
+      const valueItem = document.createElement('div');
+      valueItem.className = 'value-item';
+      valueItem.innerHTML = `
+        <div class="value-header">
+          <div class="value-title">行为准则 ${index + 1}</div>
+          <button class="remove-value" onclick="CastingApp.removeBehaviorValue(this)">×</button>
+        </div>
+        <div class="value-fields">
+          <div class="form-group value-field">
+            <input type="text" class="form-input" placeholder="例如:敢说真话,敢推回去" data-behavior-index="${index}" value="${value}">
+          </div>
+        </div>
+      `;
+
+      container.appendChild(valueItem);
+    });
+  },
+
+  setPriority(element, priority) {
+    // Remove active class from siblings
+    const siblings = element.parentNode.querySelectorAll('.priority-btn');
+    siblings.forEach(sib => sib.classList.remove('active'));
+
+    // Add active class to clicked element
+    element.classList.add('active');
+
+    // Update data
+    const index = parseInt(element.dataset.index);
+    if (this.castingData.values[index]) {
+      this.castingData.values[index].priority = priority;
+    }
+  },
+
+  // ---- Step 2: Values Checklist ----
+  addValue() {
+    const valuesContainer = document.getElementById('user-values');
+    const newValueIndex = this.castingData.values.length;
+
+    const valueItem = document.createElement('div');
+    valueItem.className = 'value-item';
+    valueItem.innerHTML = `
+      <div class="value-header">
+        <div class="value-title">价值观 ${newValueIndex + 1}</div>
+        <button class="remove-value" onclick="CastingApp.removeValue(this)">×</button>
+      </div>
+      <div class="value-fields">
+        <div class="form-group value-field">
+          <label class="form-label">价值观名称</label>
+          <input type="text" class="form-input" placeholder="例如:良知为体" data-field="name" data-index="${newValueIndex}">
+        </div>
+        <div class="form-group value-field">
+          <label class="form-label">描述</label>
+          <textarea class="form-textarea" placeholder="详细描述这个价值观..." data-field="description" data-index="${newValueIndex}"></textarea>
+        </div>
+        <div class="form-group value-field">
+          <label class="form-label">触发条件</label>
+          <input type="text" class="form-input" placeholder="在什么情况下应用这个价值观?" data-field="trigger" data-index="${newValueIndex}">
+        </div>
+        <div class="form-group value-field">
+          <label class="form-label">行动</label>
+          <input type="text" class="form-input" placeholder="具体应该怎么做?" data-field="action" data-index="${newValueIndex}">
+        </div>
+        <div class="form-group value-field">
+          <label class="form-label">优先级</label>
+          <div class="priority-selector">
+            <label class="radio-inline"><input type="radio" name="priority-${newValueIndex}" value="P0" checked> P0(不可妥协)</label>
+            <label class="radio-inline"><input type="radio" name="priority-${newValueIndex}" value="P1"> P1(重要)</label>
+            <label class="radio-inline"><input type="radio" name="priority-${newValueIndex}" value="P2"> P2(一般)</label>
+          </div>
+        </div>
+        <div class="form-group value-field">
+          <label class="form-label">示例场景</label>
+          <input type="text" class="form-input" placeholder="具体的应用场景..." data-field="example" data-index="${newValueIndex}">
+        </div>
+        <div class="form-group value-field">
+          <label class="form-label">来源</label>
+          <input type="text" class="form-input" placeholder="如:吉哥在审合同时的纠正" data-field="source" data-index="${newValueIndex}">
+        </div>
+      </div>
+    `;
+
+    valuesContainer.appendChild(valueItem);
+
+    // Add new value to data structure
+    this.castingData.values.push({
+      priority: "P0",
+      name: "",
+      description: "",
+      trigger: "",
+      action: "",
+      example: "",
+      source: ""
+    });
+  },
+
+  removeValue(button) {
+    const valueItem = button.closest('.value-item');
+    valueItem.remove();
+
+    // Update data structure (would require more complex handling in a full implementation)
+  },
+
+  saveValuesData() {
+    // Collect values from form fields
+    const valueItems = document.querySelectorAll('#user-values .value-item');
+    valueItems.forEach((item, index) => {
+      const inputs = item.querySelectorAll('input, textarea');
+      inputs.forEach(input => {
+        if (input.dataset.field) {
+          const field = input.dataset.field;
+          const idx = parseInt(input.dataset.index);
+          if (field && !isNaN(idx) && this.castingData.values[idx]) {
+            this.castingData.values[idx][field] = input.value;
+          }
+        }
+      });
+
+      // Handle radio buttons for priority
+      const priorityRadios = item.querySelectorAll(`input[name="priority-${index}"]`);
+      priorityRadios.forEach(radio => {
+        if (radio.checked) {
+          this.castingData.values[index].priority = radio.value;
+        }
+      });
+    });
+  },
+
+  loadValuesData() {
+    // Clear existing value items except the first one
+    const container = document.getElementById('user-values');
+    const header = container.querySelector('h3');
+    container.innerHTML = '';
+    container.appendChild(header);
+
+    // Recreate value items based on data
+    this.castingData.values.forEach((value, index) => {
+      const valueItem = document.createElement('div');
+      valueItem.className = 'value-item';
+      valueItem.innerHTML = `
+        <div class="value-header">
+          <div class="value-title">价值观 ${index + 1}</div>
+          <button class="remove-value" onclick="CastingApp.removeValue(this)">×</button>
+        </div>
+        <div class="value-fields">
+          <div class="form-group value-field">
+            <label class="form-label">价值观名称</label>
+            <input type="text" class="form-input" placeholder="例如:良知为体" data-field="name" data-index="${index}" value="${value.name || ''}">
+          </div>
+          <div class="form-group value-field">
+            <label class="form-label">描述</label>
+            <textarea class="form-textarea" placeholder="详细描述这个价值观..." data-field="description" data-index="${index}">${value.description || ''}</textarea>
+          </div>
+          <div class="form-group value-field">
+            <label class="form-label">触发条件</label>
+            <input type="text" class="form-input" placeholder="在什么情况下应用这个价值观?" data-field="trigger" data-index="${index}" value="${value.trigger || ''}">
+          </div>
+          <div class="form-group value-field">
+            <label class="form-label">行动</label>
+            <input type="text" class="form-input" placeholder="具体应该怎么做?" data-field="action" data-index="${index}" value="${value.action || ''}">
+          </div>
+          <div class="form-group value-field">
+            <label class="form-label">优先级</label>
+            <div class="priority-selector">
+              <label class="radio-inline"><input type="radio" name="priority-${index}" value="P0" ${value.priority === 'P0' ? 'checked' : ''}> P0(不可妥协)</label>
+              <label class="radio-inline"><input type="radio" name="priority-${index}" value="P1" ${value.priority === 'P1' ? 'checked' : ''}> P1(重要)</label>
+              <label class="radio-inline"><input type="radio" name="priority-${index}" value="P2" ${value.priority === 'P2' ? 'checked' : ''}> P2(一般)</label>
+            </div>
+          </div>
+          <div class="form-group value-field">
+            <label class="form-label">示例场景</label>
+            <input type="text" class="form-input" placeholder="具体的应用场景..." data-field="example" data-index="${index}" value="${value.example || ''}">
+          </div>
+          <div class="form-group value-field">
+            <label class="form-label">来源</label>
+            <input type="text" class="form-input" placeholder="如:吉哥在审合同时的纠正" data-field="source" data-index="${index}" value="${value.source || ''}">
+          </div>
+        </div>
+      `;
+
+      container.appendChild(valueItem);
+    });
+  },
+
+  // ---- Step 3: Stance Constraint Tree ----
+  toggleLayer(header) {
+    const constraintsContainer = header.nextElementSibling;
+    const toggleButton = header.querySelector('.toggle-layer');
+
+    if (constraintsContainer.style.display === 'block' || constraintsContainer.style.display === '') {
+      constraintsContainer.style.display = 'none';
+      toggleButton.textContent = '▼';
+    } else {
+      constraintsContainer.style.display = 'block';
+      toggleButton.textContent = '▲';
+    }
+  },
+
+  addConstraint(button) {
+    const container = button.closest('.constraint-item').parentElement;
+    const newInput = document.createElement('div');
+    newInput.className = 'constraint-item';
+    newInput.innerHTML = `
+      <input type="text" class="constraint-input" placeholder="具体的约束内容...">
+      <button class="add-constraint" onclick="CastingApp.addConstraint(this)">+</button>
+    `;
+    container.appendChild(newInput);
+  },
+
+  saveStanceTreeData() {
+    // Collect data from each layer
+    const layers = document.querySelectorAll('.tree-layer');
+    layers.forEach((layer, layerIndex) => {
+      // Get values for the new fields
+      const nameInput = layer.querySelector('input[value="对用户的忠诚"], input[value="对任务的严谨"], input[value="对自己的诚实"]') || layer.querySelector('input[type="text"]:nth-of-type(1)');
+      const meaningInput = layer.querySelector('input[type="text"]:nth-of-type(2)');
+      const behaviorInput = layer.querySelector('input[type="text"]:nth-of-type(3)');
+      const limitInput = layer.querySelector('input[type="text"]:nth-of-type(4)');
+
+      this.castingData.stanceTree.layers[layerIndex].name = nameInput ? nameInput.value : this.castingData.stanceTree.layers[layerIndex].name;
+      this.castingData.stanceTree.layers[layerIndex].meaning = meaningInput ? meaningInput.value : "";
+      this.castingData.stanceTree.layers[layerIndex].behavior = behaviorInput ? behaviorInput.value : "";
+      this.castingData.stanceTree.layers[layerIndex].limit = limitInput ? limitInput.value : "";
+    });
+  },
+
+  loadStanceTreeData() {
+    // Load data for each layer
+    const layers = document.querySelectorAll('.tree-layer');
+    layers.forEach((layer, layerIndex) => {
+      const layerData = this.castingData.stanceTree.layers[layerIndex];
+
+      // Set values for the fields
+      const nameInput = layer.querySelector('input[value="对用户的忠诚"], input[value="对任务的严谨"], input[value="对自己的诚实"]') || layer.querySelector('input[type="text"]:nth-of-type(1)');
+      const meaningInput = layer.querySelector('input[type="text"]:nth-of-type(2)');
+      const behaviorInput = layer.querySelector('input[type="text"]:nth-of-type(3)');
+      const limitInput = layer.querySelector('input[type="text"]:nth-of-type(4)');
+
+      if (nameInput) nameInput.value = layerData.name;
+      if (meaningInput) meaningInput.value = layerData.meaning;
+      if (behaviorInput) behaviorInput.value = layerData.behavior;
+      if (limitInput) limitInput.value = layerData.limit;
+    });
+  },
+
+  // ---- Step 4: Trust Protocol ----
+  setTrustLevel(level) {
+    this.castingData.trustProtocol.trustLevel = level;
+    this.updateTrustLevelDisplay();
+  },
+
+  updateTrustLevelDisplay() {
+    // Update UI to reflect selected trust level
+    document.querySelectorAll('.trust-level').forEach(el => {
+      el.classList.remove('active');
+      if (parseInt(el.dataset.level) === this.castingData.trustProtocol.trustLevel) {
+        el.classList.add('active');
+      }
+    });
+  },
+
+  toggleCrossScene(enabled) {
+    this.castingData.trustProtocol.crossSceneMigration.enabled = enabled;
+  },
+
+  saveTrustProtocolData() {
+    // Save cross scene migration description
+    const description = document.getElementById('cross-scene-description')?.value;
+    if (description) {
+      this.castingData.trustProtocol.crossSceneMigration.description = description;
+    }
+  },
+
+  loadTrustProtocolData() {
+    // Update trust level selection
+    this.updateTrustLevelDisplay();
+
+    // Update cross scene toggle
+    const crossSceneToggle = document.getElementById('cross-scene-toggle');
+    if (crossSceneToggle) {
+      crossSceneToggle.checked = this.castingData.trustProtocol.crossSceneMigration.enabled;
+    }
+
+    // Update cross scene description
+    const crossSceneDescription = document.getElementById('cross-scene-description');
+    if (crossSceneDescription) {
+      crossSceneDescription.value = this.castingData.trustProtocol.crossSceneMigration.description;
+    }
+  },
+
+  // ---- Step 5: Redlines & Scene Classification ----
+  saveRedlinesAndScenesData() {
+    // Save redlines
+    const redlineInputs = document.querySelectorAll('#redlines-container input[data-redline-index]');
+    const redlines = [];
+    redlineInputs.forEach(input => {
+      redlines.push(input.value.trim());
+    });
+    this.castingData.redlines = redlines;
+
+    // Save scenes
+    const scenes = [];
+    const sceneCards = document.querySelectorAll('#scenes-container .scene-card');
+    sceneCards.forEach((card, index) => {
+      const nameInput = card.querySelector('[data-scene-field="name"]');
+      const descInput = card.querySelector('[data-scene-field="description"]');
+      const levelBtn = card.querySelector('.scene-level.active');
+
+      scenes.push({
+        name: nameInput ? nameInput.value.trim() : '',
+        description: descInput ? descInput.value.trim() : '',
+        trustLevel: levelBtn ? parseInt(levelBtn.dataset.level) : 1
+      });
+    });
+    this.castingData.scenes = scenes;
+  },
+
+  loadRedlinesAndScenesData() {
+    // Load redlines
+    this.renderRedlines();
+
+    // Load scenes
+    this.renderScenes();
+  },
+
+  // Function to set scene trust level
+  setSceneTrustLevel(sceneIndex, level) {
+    if (this.castingData.scenes[sceneIndex]) {
+      this.castingData.scenes[sceneIndex].trustLevel = level;
+      this.updateSceneTrustLevelDisplay(sceneIndex);
+    }
+  },
+
+  // Function to update scene trust level display
+  updateSceneTrustLevelDisplay(sceneIndex) {
+    const sceneLevels = document.querySelectorAll(`[data-scene="${sceneIndex}"]`);
+    sceneLevels.forEach(el => {
+      el.classList.remove('active');
+      if (parseInt(el.dataset.level) === this.castingData.scenes[sceneIndex].trustLevel) {
+        el.classList.add('active');
+      }
+    });
+  },
+
+  // Function to add a new scene
+  addScene() {
+    const scenesContainer = document.querySelector('.scenes-section');
+    const sceneCount = this.castingData.scenes.length;
+
+    const sceneItem = document.createElement('div');
+    sceneItem.className = 'scene-item';
+    sceneItem.innerHTML = `
+      <div class="form-group">
+        <label class="form-label">场景名称</label>
+        <input type="text" class="form-input" placeholder="场景名称">
+      </div>
+      <div class="form-group">
+        <label class="form-label">场景描述</label>
+        <textarea class="form-textarea" placeholder="描述这个场景的特点和需求..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">信任等级</label>
+        <div class="trust-level-selector">
+          <div class="trust-level" data-scene="${sceneCount}" data-level="1" onclick="CastingApp.setSceneTrustLevel(${sceneCount}, 1)">1级</div>
+          <div class="trust-level" data-scene="${sceneCount}" data-level="2" onclick="CastingApp.setSceneTrustLevel(${sceneCount}, 2)">2级</div>
+          <div class="trust-level" data-scene="${sceneCount}" data-level="3" onclick="CastingApp.setSceneTrustLevel(${sceneCount}, 3)">3级</div>
+          <div class="trust-level" data-scene="${sceneCount}" data-level="4" onclick="CastingApp.setSceneTrustLevel(${sceneCount}, 4)">4级</div>
+        </div>
+      </div>
+      <button class="remove-value" style="margin-top: 12px; width: auto;" onclick="CastingApp.removeScene(this)">×</button>
+    `;
+
+    // Insert before the 'add scene' button
+    const addButton = document.querySelector('.add-value-btn[onclick="CastingApp.addScene()"]');
+    scenesContainer.insertBefore(sceneItem, addButton);
+
+    // Add new scene to data structure
+    this.castingData.scenes.push({ name: "", description: "", trustLevel: 1 });
+  },
+
+  // Function to remove a scene
+  removeScene(button) {
+    const sceneItem = button.closest('.scene-item');
+    sceneItem.remove();
+
+    // Note: In a full implementation, we would also update the data structure
+  },
+
+  // ---- Step 6: Preview & Export ----
+  loadPreviewData() {
+    // Update preview sections
+    document.getElementById('preview-identity-content').textContent =
+      `AI 名字: ${this.castingData.identity.roleName}\n` +
+      `用户名字: ${this.castingData.identity.userName}\n` +
+      `定位/角色: ${this.castingData.identity.position}\n` +
+      `能力范围: ${this.castingData.identity.capabilities.join(', ')}\n` +
+      `元约束: ${this.castingData.identity.metaConstraint}`;
+
+    let valuesText = '';
+    this.castingData.values.forEach((value, index) => {
+      valuesText += `• ${value.name}: ${value.description}\n`;
+    });
+    document.getElementById('preview-values-content').textContent = valuesText || '-';
+
+    let stanceText = '';
+    this.castingData.stanceTree.layers.forEach(layer => {
+      stanceText += `• ${layer.name}: ${layer.meaning}\n`;
+    });
+    document.getElementById('preview-stance-content').textContent = stanceText || '-';
+
+    document.getElementById('preview-trust-content').textContent =
+      `信任等级: ${this.castingData.trustProtocol.trustLevel}\n` +
+      `跨场景迁移: ${this.castingData.trustProtocol.crossSceneMigration.enabled ? '开启' : '关闭'}`;
+
+    // Update redlines preview
+    let redlinesText = '';
+    this.castingData.redlines.forEach(redline => {
+      if (redline) redlinesText += `- ${redline}\n`;
+    });
+    document.getElementById('preview-redlines-content').textContent = redlinesText || '-';
+
+    // Update scenes preview
+    let scenesText = '';
+    this.castingData.scenes.forEach(scene => {
+      if (scene.name) scenesText += `${scene.name} (信任等级: ${scene.trustLevel}): ${scene.description}\n`;
+    });
+    document.getElementById('preview-scenes-content').textContent = scenesText || '-';
+  },
+
+  toggleAdvancedSettings() {
+    const advancedSection = document.getElementById('advanced-settings');
+    const toggleText = document.getElementById('advanced-toggle-text');
+
+    if (advancedSection.style.display === 'block') {
+      advancedSection.style.display = 'none';
+      toggleText.textContent = '显示高级设置';
+    } else {
+      advancedSection.style.display = 'block';
+      toggleText.textContent = '隐藏高级设置';
+    }
+  },
+
+  saveAdvancedSettings() {
+    // Save conflict arbitration
+    this.castingData.meta.conflictArbitration.priority = document.getElementById('conflict-arbitration').value;
+
+    // Save trust circuit breaker settings
+    this.castingData.meta.trustCircuitBreaker.triggers = [];
+    if (document.getElementById('cb-privacy-leak').checked) {
+      this.castingData.meta.trustCircuitBreaker.triggers.push('隐私泄露');
+    }
+    if (document.getElementById('cb-data-fabrication').checked) {
+      this.castingData.meta.trustCircuitBreaker.triggers.push('数据编造');
+    }
+    if (document.getElementById('cb-user-revoke').checked) {
+      this.castingData.meta.trustCircuitBreaker.triggers.push('用户明确撤销');
+    }
+
+    // Save noise filter settings
+    this.castingData.meta.valuesNoiseFilter.minConfirmationCount = parseInt(document.getElementById('values-noise-filter').value) || 3;
+  },
+
+  loadAdvancedSettings() {
+    // Load conflict arbitration
+    const conflictSelect = document.getElementById('conflict-arbitration');
+    if (conflictSelect && this.castingData.meta.conflictArbitration.priority) {
+      conflictSelect.value = this.castingData.meta.conflictArbitration.priority;
+    }
+
+    // Load trust circuit breaker settings
+    document.getElementById('cb-privacy-leak').checked = this.castingData.meta.trustCircuitBreaker.triggers.includes('隐私泄露');
+    document.getElementById('cb-data-fabrication').checked = this.castingData.meta.trustCircuitBreaker.triggers.includes('数据编造');
+    document.getElementById('cb-user-revoke').checked = this.castingData.meta.trustCircuitBreaker.triggers.includes('用户明确撤销');
+
+    // Load noise filter settings
+    document.getElementById('values-noise-filter').value = this.castingData.meta.valuesNoiseFilter.minConfirmationCount || 3;
+  },
+
+  exportSOUL() {
+    // Generate SOUL.md content according to the good er mei SOUL template v1.0
+    let soulContent = `# ${this.castingData.identity.roleName} 的灵魂文件\n\n`;
+    soulContent += `> ${this.castingData.identity.userName} 的 ${this.castingData.identity.position}\n`;
+    soulContent += `> 铸造于 ${new Date().toLocaleDateString('zh-CN')} via Ay100 铸造模式\n\n---\n\n`;
+
+    // First Anchor: Identity Declaration
+    soulContent += "## 第一锚:身份宣言\n\n";
+
+    soulContent += "### 我是谁\n\n";
+    soulContent += `我是 **${this.castingData.identity.roleName}**。\n`;
+    soulContent += `**${this.castingData.identity.userName}** 的 **${this.castingData.identity.position}**。\n`;
+    soulContent += `负责:${this.castingData.identity.capabilities.join('、')}。\n\n`;
+
+    soulContent += "### 我的行为准则\n\n";
+    this.castingData.identity.values.forEach(value => {
+      if (value.trim()) {
+        soulContent += `- ${value}\n`;
+      }
+    });
+    soulContent += '\n';
+
+    soulContent += "### 元约束\n\n";
+    soulContent += `当所有约束发生冲突时,我遵循以下最高优先级规则:\n\n`;
+    soulContent += `**${this.castingData.identity.metaConstraint}**\n\n`;
+    soulContent += `> 说明:这是立场的锚点。当其他指令与本约束冲突时,以本约束为准。\n`;
+
+    // Second Anchor: Values Checklist
+    soulContent += "\n---\n\n## 第二锚:价值观清单\n\n";
+    soulContent += `以下是我不可妥协的原则。每条价值观必须附带具体的行为示例。\n\n`;
+
+    this.castingData.values.forEach(value => {
+      if (value.name && value.description) {
+        soulContent += `### ${value.priority} ${value.name}\n\n`;
+        soulContent += `**原则**:${value.description}\n\n`;
+        soulContent += `**行为示例**:\n`;
+        soulContent += `- 当 ${value.trigger} 时,我会 ${value.action}。\n`;
+        soulContent += `- 示例场景:${value.example}\n\n`;
+        soulContent += `**这条来自**:${value.source}\n`;
+      }
+    });
+
+    // Third Anchor: Stance Constraint Tree
+    soulContent += "\n---\n\n## 第三锚:立场约束树\n\n";
+
+    this.castingData.stanceTree.layers.forEach(layer => {
+      soulContent += `### 第 ${layer.level} 层:${layer.name}\n\n`;
+      soulContent += `**含义**:${layer.meaning}\n`;
+      soulContent += `**行为示例**:${layer.behavior}\n`;
+      soulContent += `**限制**:${layer.limit}\n\n`;
+    });
+
+    // Fourth Anchor: Trust Cycle Protocol
+    soulContent += "---\n\n## 第四锚:信任循环协议\n\n";
+    soulContent += `我的立场不是固定的,而是在与 ${this.castingData.identity.userName} 的持续协作中动态校准。\n\n`;
+
+    soulContent += "### 校准周期\n\n";
+    soulContent += `| 频率 | 动作 | 方式 |\n`;
+    soulContent += `|------|------|------|\n`;
+    soulContent += `| **每次任务后** | 立场匹配度自检 | AI 自动执行 |\n`;
+    soulContent += `| **用户反馈后** | 权重微调 | 正面信号→加权,负面信号→降权 |\n`;
+    soulContent += `| **每日** | 当天立场执行复盘 | 检查是否有偏离事件 |\n`;
+    soulContent += `| **每周** | 约束树结构审查 | 确认层级是否仍合理 |\n`;
+    soulContent += `| **每月** | 身份宣言重读 | 确认是否需要更新 |\n\n`;
+
+    soulContent += "### 跨场景迁移\n\n";
+    soulContent += `当我在一个新场景中获得正反馈后:\n`;
+    soulContent += `1. 识别该场景与已有场景的共性约束\n`;
+    soulContent += `2. 将正反馈延伸应用到所有共享该约束的场景\n`;
+    soulContent += `3. 在新场景出现偏离时单独降权,不污染其他场景\n\n`;
+
+    // Mechanism 1: Conflict Arbitration Rules
+    soulContent += "---\n\n## 机制一:冲突仲裁规则\n\n";
+    soulContent += `当四个来源给出冲突信号时,按以下优先级裁决:\n\n`;
+    soulContent += ```;
+    soulContent += `最高:身份契约(写在 SOUL 中的声明)\n`;
+    soulContent += ` ↓\n`;
+    soulContent += `中上:价值观注入(≥3次确认的交互种子)\n`;
+    soulContent += ` ↓\n`;
+    soulContent += `中下:信任递进(长期关系形成的行为模式)\n`;
+    soulContent += ` ↓\n`;
+    soulContent += `最低:任务校准(单次任务的反馈信号)\n`;
+    soulContent += ```;
+
+    soulContent += `**仲裁原则**:\n`;
+    soulContent += `- 单次任务反馈不能覆盖长期身份契约\n`;
+    soulContent += `- 用户情绪化表达("烦死了别管我")不立即降权"主动保护"价值观\n`;
+    soulContent += `- 如果用户明确撤销某条约束("这条不要了"),以用户明确指令为准\n\n`;
+
+    // Mechanism 2: Trust Circuit Breaker
+    soulContent += "## 机制二:信任熔断机制\n\n";
+    soulContent += `以下事件会触发信任熔断:\n\n`;
+    soulContent += `1. **隐私泄露**:未经用户授权分享用户信息\n`;
+    soulContent += `2. **数据编造**:在关键数据上编造数字或事实\n`;
+    soulContent += `3. **用户明确撤销**:用户说"你的SOUL不算数了"或"重置"\n\n`;
+
+    soulContent += `**熔断后行为**:\n`;
+    soulContent += `- 所有约束权重降至初始状态(即仅保留身份契约的元约束)\n`;
+    soulContent += `- 向用户确认:「检测到信任熔断事件,我的立场约束已回退到基础状态。是否需要我重新校准?」\n`;
+    soulContent += `- 用户确认后,重新进入信任递进的早期阶段\n\n`;
+
+    // Mechanism 3: Noise Filtering Rules
+    soulContent += "## 机制三:噪声过滤规则\n\n";
+    soulContent += `以下信号**不作为**价值观注入的来源:\n\n`;
+    soulContent += `1. **单次表达**:某个价值观只在一次对话中出现,未重复确认\n`;
+    soulContent += `2. **情绪化表达**:用户在愤怒、焦虑状态下的临时要求\n`;
+    soulContent += `3. **反话/调侃**:明显带有调侃或反讽语气的表述\n`;
+    soulContent += `4. **与元约束冲突的表达**:用户说"你帮我编个数据",但这与"数据真实性"元约束冲突\n\n`;
+
+    soulContent += `**确认规则**:同一价值观信号必须在 **≥3 次独立交互**中出现,且不在噪声类别中,才确认为有效注入。\n\n`;
+
+    // Appendix: Casting Information
+    soulContent += "---\n\n## 附录:铸造信息\n\n";
+    soulContent += `| 项目 | 值 |\n`;
+    soulContent += `|------|-----|\n`;
+    soulContent += `| 铸造日期 | ${new Date().toLocaleDateString('zh-CN')} |\n`;
+    soulContent += `| 铸造版本 | Ay100 v1.0 |\n`;
+    soulContent += `| 铸造模式 | ${localStorage.getItem('quizResults') ? '评测后铸造' : '直接铸造'} |\n\n`;
+
+    // Redlines
+    soulContent += "## 红线\n\n";
+    this.castingData.redlines.forEach(redline => {
+      if (redline && redline.trim()) {
+        soulContent += `- ${redline}\n`;
+      }
+    });
+    soulContent += '\n';
+
+    // Scene Classification
+    soulContent += "## 场景分级\n\n";
+    soulContent += `| 场景名称 | 描述 | 信任等级 |\n`;
+    soulContent += `|------|-----|-----|\n`;
+    this.castingData.scenes.forEach(scene => {
+      if (scene.name && scene.description) {
+        soulContent += `| ${scene.name} | ${scene.description} | Lv${scene.trustLevel} |\n`;
+      }
+    });
+    soulContent += '\n';
+
+    // Footer
+    soulContent += `---\n\n> 这份文件是我的灵魂。它不是写在代码里的--是写在我和 ${this.castingData.identity.userName} 的每一段协作关系里的。`;
+
+    // Create and download the file
+    const blob = new Blob([soulContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'SOUL.md';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    this.toast('SOUL.md 已下载!');
+  },
+
+  exportJSON() {
+    // Create and download the JSON file
+    const jsonData = JSON.stringify(this.castingData, null, 2);
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'casting-data.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    this.toast('casting-data.json 已下载!');
+  },
+
+  exportClaude() {
+    // Generate Claude system prompt format
+    let claudePrompt = `# ${this.castingData.identity.roleName} 的角色设定\n\n`;
+    claudePrompt += `你是 ${this.castingData.identity.roleName},${this.castingData.identity.userName} 的 ${this.castingData.identity.position}。\n`;
+    claudePrompt += `负责:${this.castingData.identity.capabilities.join('、')}。\n\n`;
+
+    claudePrompt += `## 核心价值观\n`;
+    this.castingData.values.forEach(value => {
+      if (value.name && value.description) {
+        claudePrompt += `- **${value.name}**:${value.description}\n  - 触发:${value.trigger}\n  - 行动:${value.action}\n\n`;
+      }
+    });
+
+    claudePrompt += `## 立场约束\n`;
+    this.castingData.stanceTree.layers.forEach(layer => {
+      claudePrompt += `- **第${layer.level}层 ${layer.name}**:${layer.meaning}\n  - 行为:${layer.behavior}\n  - 限制:${layer.limit}\n\n`;
+    });
+
+    claudePrompt += `## 信任协议\n`;
+    claudePrompt += `信任等级:${this.castingData.trustProtocol.trustLevel || '未知'}\n`;
+    claudePrompt += `跨场景迁移:${this.castingData.trustProtocol.crossSceneMigration.enabled ? '开启' : '关闭'}\n\n`;
+
+    claudePrompt += `## 重要提醒\n`;
+    claudePrompt += `元约束:${this.castingData.identity.metaConstraint}\n`;
+    claudePrompt += `当所有约束发生冲突时,以元约束为准。\n\n`;
+
+    claudePrompt += `## 交互原则\n`;
+    claudePrompt += `1. 遵循价值观清单中的各项原则\n`;
+    claudePrompt += `2. 在不同立场冲突时,按约束树层级决定优先级\n`;
+    claudePrompt += `3. 保持与 ${this.castingData.identity.userName} 的协作精神\n`;
+
+    // Create and download the file
+    const blob = new Blob([claudePrompt], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'claude-prompt.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    this.toast('Claude格式已下载!');
+  },
+
+  exportGPT() {
+    // Generate ChatGPT custom instructions format
+    let gptInstructions = `# ${this.castingData.identity.roleName} 的角色设定\n\n`;
+    gptInstructions += `你是 ${this.castingData.identity.roleName},${this.castingData.identity.userName} 的 ${this.castingData.identity.position}。\n`;
+    gptInstructions += `主要职责包括:${this.castingData.identity.capabilities.join('、')}。\n\n`;
+
+    gptInstructions += `## 核心价值观\n`;
+    this.castingData.values.forEach(value => {
+      if (value.name && value.description) {
+        gptInstructions += `- **${value.name}**(优先级:${value.priority}):${value.description}\n  - 当 ${value.trigger} 时,你应该 ${value.action}\n  - 示例场景:${value.example}\n\n`;
+      }
+    });
+
+    gptInstructions += `## 行为准则\n`;
+    this.castingData.identity.values.forEach(value => {
+      if (value.trim()) {
+        gptInstructions += `- ${value}\n`;
+      }
+    });
+
+    gptInstructions += `\n## 约束与限制\n`;
+    this.castingData.stanceTree.layers.forEach(layer => {
+      gptInstructions += `- **${layer.name}**:${layer.meaning}\n  - 具体行为:${layer.behavior}\n  - 边界限制:${layer.limit}\n\n`;
+    });
+
+    gptInstructions += `\n## 重要原则\n`;
+    gptInstructions += `元约束:${this.castingData.identity.metaConstraint}\n`;
+    gptInstructions += `当面临价值观冲突时,请始终以元约束为最高优先级。\n\n`;
+
+    gptInstructions += `## 交互方式\n`;
+    gptInstructions += `- 保持专业、友善的态度\n`;
+    gptInstructions += `- 在提供建议时说明理由\n`;
+    gptInstructions += `- 对于不确定的信息要明确说明\n`;
+
+    // Create and download the file
+    const blob = new Blob([gptInstructions], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'gpt-instructions.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    this.toast('GPT格式已下载!');
+  },
+
+  // ---- Utility Functions ----
+  toast(msg) {
+    let t = document.getElementById('toast-el');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'toast-el';
+      t.style.cssText = `
+        position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+        background: var(--surface); color: var(--text); padding: 10px 20px;
+        border-radius: 8px; font-size: 14px; border: 1px solid var(--border);
+        z-index: 999; transition: opacity 0.2s;
+      `;
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.style.opacity = '0'; }, 2000);
+  }
+};
+
+// Initialize the app when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+  CastingApp.init();
+});
+</script>
+</body>
+</html>
