@@ -1889,9 +1889,9 @@ const CastingApp = {
   },
 
   goToStep(stepNumber) {
-    // Save current step data before validating
+    // Save current step data BEFORE validating, so validation reads fresh DOM state
     this.saveCurrentStepData();
-
+    
     // Validate current step before navigating
     if (!this.validateCurrentStep()) {
       return; // Don't navigate if validation fails
@@ -2906,6 +2906,5 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
 
 
