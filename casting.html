@@ -1877,6 +1877,10 @@ const CastingApp = {
       p.style.display = 'none';
     });
     const page = document.getElementById(id);
+    if (!page) {
+      console.error('Page not found:', id);
+      return;
+    }
     // 小延迟以触发 CSS transition
     requestAnimationFrame(() => {
       page.style.display = 'flex';
