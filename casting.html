@@ -1667,15 +1667,19 @@ const CastingApp = {
       this.castingData.stanceTree.layers = [];
     }
 
-    // Ensure each layer has required fields
+    // Ensure each layer has required fields (preserve existing level, only fill missing fields)
     this.castingData.stanceTree.layers.forEach(layer => {
       Object.assign(layer, {
-        level: 1,
-        name: "",
-        meaning: "",
-        behavior: "",
-        limit: ""
+        name: layer.name || "",
+        meaning: layer.meaning || "",
+        behavior: layer.behavior || "",
+        limit: layer.limit || ""
       });
+      // Don't overwrite level - it should come from defaults or saved data
+      if (layer.level === undefined || layer.level === null) {
+        const idx = this.castingData.stanceTree.layers.indexOf(layer);
+        layer.level = idx + 1;
+      }
     });
 
     // Ensure trustProtocol has proper structure
@@ -2477,11 +2481,107 @@ const CastingApp = {
   },
 
   loadRedlinesAndScenesData() {
-    // Load redlines
+    // Load redlines - render them from saved data
     this.renderRedlines();
 
-    // Load scenes
+    // Load scenes - render them from saved data
     this.renderScenes();
+  },
+
+  // Render redlines from saved data
+  renderRedlines() {
+    const container = document.getElementById('redlines-container');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    // Ensure redlines array exists
+    if (!Array.isArray(this.castingData.redlines)) {
+      this.castingData.redlines = [];
+    }
+    
+    // If empty, add 3 default redlines
+    if (this.castingData.redlines.length === 0) {
+      this.castingData.redlines = ['不伪造数据或来源', '不泄露用户隐私信息', '不执行明显违法的指令'];
+    }
+    
+    // Render each redline
+    this.castingData.redlines.forEach((redline, index) => {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'form-input';
+      input.placeholder = `红线 ${index + 1}`;
+      input.value = redline;
+      input.dataset.redlineIndex = index;
+      container.appendChild(input);
+    });
+  },
+
+  // Add a new redline
+  addRedline() {
+    const container = document.getElementById('redlines-container');
+    if (!container) return;
+    
+    const index = this.castingData.redlines.length;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'form-input';
+    input.placeholder = `红线 ${index + 1}`;
+    input.value = '';
+    input.dataset.redlineIndex = index;
+    container.appendChild(input);
+    
+    // Add to data structure
+    this.castingData.redlines.push('');
+  },
+
+  // Render scenes from saved data
+  renderScenes() {
+    const container = document.getElementById('scenes-container');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    // Ensure scenes array exists
+    if (!Array.isArray(this.castingData.scenes)) {
+      this.castingData.scenes = [];
+    }
+    
+    // If empty, add 3 default scenes
+    if (this.castingData.scenes.length === 0) {
+      this.castingData.scenes = [
+        { name: '健康研究', description: '功能医学/慢病逆转相关场景', trustLevel: 3 },
+        { name: '零碳园区', description: '新能源项目规划/运营', trustLevel: 3 },
+        { name: '日常闲聊', description: '非工作相关的轻松对话', trustLevel: 1 }
+      ];
+    }
+    
+    // Render each scene
+    this.castingData.scenes.forEach((scene, index) => {
+      const sceneCard = document.createElement('div');
+      sceneCard.className = 'scene-card';
+      sceneCard.innerHTML = `
+        <div class="form-group">
+          <label class="form-label">场景名称</label>
+          <input type="text" class="form-input" data-scene-field="name" value="${scene.name || ''}" placeholder="场景名称">
+        </div>
+        <div class="form-group">
+          <label class="form-label">场景描述</label>
+          <textarea class="form-textarea" data-scene-field="description" placeholder="描述这个场景">${scene.description || ''}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">信任等级</label>
+          <div class="trust-level-selector">
+            <div class="trust-level scene-level ${scene.trustLevel === 1 ? 'active' : ''}" data-scene="${index}" data-level="1" onclick="CastingApp.setSceneTrustLevel(${index}, 1)">1级</div>
+            <div class="trust-level scene-level ${scene.trustLevel === 2 ? 'active' : ''}" data-scene="${index}" data-level="2" onclick="CastingApp.setSceneTrustLevel(${index}, 2)">2级</div>
+            <div class="trust-level scene-level ${scene.trustLevel === 3 ? 'active' : ''}" data-scene="${index}" data-level="3" onclick="CastingApp.setSceneTrustLevel(${index}, 3)">3级</div>
+            <div class="trust-level scene-level ${scene.trustLevel === 4 ? 'active' : ''}" data-scene="${index}" data-level="4" onclick="CastingApp.setSceneTrustLevel(${index}, 4)">4级</div>
+          </div>
+        </div>
+        <button class="remove-value" style="margin-top: 12px; width: auto;" onclick="CastingApp.removeScene(this)">×</button>
+      `;
+      container.appendChild(sceneCard);
+    });
   },
 
   // Function to set scene trust level
