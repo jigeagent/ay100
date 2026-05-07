@@ -1755,6 +1755,8 @@ const CastingApp = {
     if (savedData && !hash.includes('new')) {
       if (confirm('检测到未完成的铸造数据，是否继续上次的铸造？')) {
         this.loadCastingData();
+        // Populate form fields with saved data
+        this.loadDataForStep(1);
       } else {
         // Clear saved data if user chooses to start over
         localStorage.removeItem('castingData');
@@ -2040,7 +2042,28 @@ const CastingApp = {
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        this.castingData = {...this.castingData, ...parsed};
+        // Deep merge: update each section individually to preserve structure
+        if (parsed.identity) {
+          this.castingData.identity = Object.assign({}, this.castingData.identity, parsed.identity);
+        }
+        if (parsed.values && Array.isArray(parsed.values)) {
+          this.castingData.values = parsed.values;
+        }
+        if (parsed.stanceTree) {
+          this.castingData.stanceTree = Object.assign({}, this.castingData.stanceTree, parsed.stanceTree);
+        }
+        if (parsed.trustProtocol) {
+          this.castingData.trustProtocol = Object.assign({}, this.castingData.trustProtocol, parsed.trustProtocol);
+        }
+        if (parsed.redlines) {
+          this.castingData.redlines = parsed.redlines;
+        }
+        if (parsed.scenes) {
+          this.castingData.scenes = parsed.scenes;
+        }
+        if (parsed.meta) {
+          this.castingData.meta = Object.assign({}, this.castingData.meta, parsed.meta);
+        }
         // Ensure the data structure is complete after loading
         this.ensureDataStructure();
       } catch (e) {
@@ -2345,38 +2368,39 @@ const CastingApp = {
   },
 
   saveStanceTreeData() {
-    // Collect data from each layer
+    // Collect data from each layer using reliable selectors
     const layers = document.querySelectorAll('.tree-layer');
     layers.forEach((layer, layerIndex) => {
-      // Get values for the new fields
-      const nameInput = layer.querySelector('input[value="对用户的忠诚"], input[value="对任务的严谨"], input[value="对自己的诚实"]') || layer.querySelector('input[type="text"]:nth-of-type(1)');
-      const meaningInput = layer.querySelector('input[type="text"]:nth-of-type(2)');
-      const behaviorInput = layer.querySelector('input[type="text"]:nth-of-type(3)');
-      const limitInput = layer.querySelector('input[type="text"]:nth-of-type(4)');
-
-      this.castingData.stanceTree.layers[layerIndex].name = nameInput ? nameInput.value : this.castingData.stanceTree.layers[layerIndex].name;
-      this.castingData.stanceTree.layers[layerIndex].meaning = meaningInput ? meaningInput.value : "";
-      this.castingData.stanceTree.layers[layerIndex].behavior = behaviorInput ? behaviorInput.value : "";
-      this.castingData.stanceTree.layers[layerIndex].limit = limitInput ? limitInput.value : "";
+      const container = layer.querySelector('.constraints-container');
+      if (!container) return;
+      const inputs = container.querySelectorAll('.form-group .form-input');
+      
+      if (inputs.length >= 4 && this.castingData.stanceTree.layers[layerIndex]) {
+        this.castingData.stanceTree.layers[layerIndex].name = inputs[0].value;
+        this.castingData.stanceTree.layers[layerIndex].meaning = inputs[1].value;
+        this.castingData.stanceTree.layers[layerIndex].behavior = inputs[2].value;
+        this.castingData.stanceTree.layers[layerIndex].limit = inputs[3].value;
+      }
     });
   },
 
   loadStanceTreeData() {
-    // Load data for each layer
+    // Load data for each layer using reliable selectors
     const layers = document.querySelectorAll('.tree-layer');
     layers.forEach((layer, layerIndex) => {
       const layerData = this.castingData.stanceTree.layers[layerIndex];
-
-      // Set values for the fields
-      const nameInput = layer.querySelector('input[value="对用户的忠诚"], input[value="对任务的严谨"], input[value="对自己的诚实"]') || layer.querySelector('input[type="text"]:nth-of-type(1)');
-      const meaningInput = layer.querySelector('input[type="text"]:nth-of-type(2)');
-      const behaviorInput = layer.querySelector('input[type="text"]:nth-of-type(3)');
-      const limitInput = layer.querySelector('input[type="text"]:nth-of-type(4)');
-
-      if (nameInput) nameInput.value = layerData.name;
-      if (meaningInput) meaningInput.value = layerData.meaning;
-      if (behaviorInput) behaviorInput.value = layerData.behavior;
-      if (limitInput) limitInput.value = layerData.limit;
+      if (!layerData) return;
+      
+      const container = layer.querySelector('.constraints-container');
+      if (!container) return;
+      const inputs = container.querySelectorAll('.form-group .form-input');
+      
+      if (inputs.length >= 4) {
+        inputs[0].value = layerData.name || "";
+        inputs[1].value = layerData.meaning || "";
+        inputs[2].value = layerData.behavior || "";
+        inputs[3].value = layerData.limit || "";
+      }
     });
   },
 
